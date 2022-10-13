@@ -105,6 +105,7 @@ void ABirdController::Evading()
 void ABirdController::Flocking()
 {
 	/* the flocking logic should be managed by a flock manager. we can just have the boxes either stack on top of each other */
+	//import a flockmanager. 
 }
 
 void ABirdController::StateChange(int statenum)
