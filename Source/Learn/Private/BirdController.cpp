@@ -62,7 +62,8 @@ void ABirdController::Chasing()
 	try
 	{
 		UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
-		this->MoveToActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+		//this->MoveToActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));//swap this out for actor location
+		this->MoveToLocation(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation());
 	}
 	catch (const std::exception&)
 	{
