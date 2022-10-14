@@ -9,6 +9,7 @@
 #include "Bird.h"
 #include "AI/NavigationSystemBase.h"
 #include "AI/Navigation/NavigationTypes.h"
+#include "FlockManager.h"
 
 ABirdController::ABirdController(const FObjectInitializer& ObjectInitializer)
 {

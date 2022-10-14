@@ -3,17 +3,28 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "Bird.generated.h"
+#include "GameFramework/Actor.h"
+#include "FlockManager.generated.h"
+
+
+class ABird;
 
 UCLASS()
-class LEARN_API ABird : public ACharacter
+class LEARN_API AFlockManager : public AActor
 {
 	GENERATED_BODY()
+	
+public:	
+	// Sets default values for this actor's properties
+	AFlockManager();
 
-public:
-	// Sets default values for this character's properties
-	ABird();
+	TArray<AActor*>AllBirds;
+
+	TMap<ABird,TArray<ABird*>>Groups;
+
+	UFUNCTION()
+		void Initialize();
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -22,8 +33,5 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 };
