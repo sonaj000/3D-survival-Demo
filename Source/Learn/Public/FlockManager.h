@@ -20,11 +20,15 @@ public:
 
 	TArray<AActor*>AllBirds;
 
-	TMap<ABird,TArray<ABird*>>Groups;
+	TMap<int,TArray<AActor*>>Groups;
+
+
 
 	UFUNCTION()
 		void Initialize();
 
+	UFUNCTION()
+		void MergeFlock(TArray<AActor*>NewFlock);
 
 protected:
 	// Called when the game starts or when spawned

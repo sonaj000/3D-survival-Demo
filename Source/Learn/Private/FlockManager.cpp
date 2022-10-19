@@ -17,12 +17,33 @@ void AFlockManager::Initialize()
 {
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABird::StaticClass(),AllBirds);
 	//cast to bird
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("all the birds are added"));
+	}
+	
 }
+
+void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
+{
+	for (AActor* member : NewFlock)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("testing  %s"), *member->GetName());
+		//if (GEngine)
+		//{
+		//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
+		//}
+	}
+}
+
+
 
 // Called when the game starts or when spawned
 void AFlockManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Initialize();
 	
 }
 

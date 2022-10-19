@@ -30,6 +30,9 @@ ABirdController::ABirdController(const FObjectInitializer& ObjectInitializer)
 	GetPerceptionComponent()->OnPerceptionUpdated.AddDynamic(this, &ABirdController::OnPawnDetected);
 	GetPerceptionComponent()->ConfigureSense(*SightConfig);
 
+	bisCharacterDetected = false;
+	DistanceToPlayer = 0.0;
+
 	bisChasing = false;
 	bisEvading = false;
 	bisFlocking = false;
@@ -39,6 +42,7 @@ ABirdController::ABirdController(const FObjectInitializer& ObjectInitializer)
 	EvadeMat = CreateDefaultSubobject<UMaterial>(TEXT("Evade Material"));
 	FlockMat = CreateDefaultSubobject<UMaterial>(TEXT("Flock Material"));
 
+	Manager = Cast<AFlockManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AFlockManager::StaticClass()));
 
 }
 
@@ -48,7 +52,7 @@ void ABirdController::BeginPlay()
 
 
 	FTimerHandle Testing;
-	GetWorld()->GetTimerManager().SetTimer(Testing, this, &ABirdController::Chasing, 5.0f,true); 
+	GetWorld()->GetTimerManager().SetTimer(Testing, this, &ABirdController::Flocking, 5.0f,true); 
 }
 
 void ABirdController::OnPossess(APawn* cPawn)
@@ -105,6 +109,7 @@ void ABirdController::Evading()
 
 void ABirdController::Flocking()
 {
+	bisFlocking = true;
 	/* the flocking logic should be managed by a flock manager. we can just have the boxes either stack on top of each other */
 	//import a flockmanager. 
 	/*flock manager should keep track of all the birds on the level via get all actors of class function to store them all in a array
@@ -131,6 +136,8 @@ void ABirdController::Flocking()
 	so one thing is all these birds need to have destructors to destroy at the end. 
 	
 	*/
+
+
 }
 
 void ABirdController::StateChange(int statenum)
@@ -166,23 +173,23 @@ void ABirdController::StateChange(int statenum)
 void ABirdController::OnPawnDetected(const TArray<AActor*>& DetectedPawns)
 {
 	/*take a look at which state we are in rn.*/
-	if (bisFlocking)
+	UE_LOG(LogTemp, Warning, TEXT("detected"));
+
+	for (size_t i{ 0 }; i < DetectedPawns.Num(); i++)
 	{
-		for (size_t i{ 0 }; i < DetectedPawns.Num(); i++)
+		UE_LOG(LogTemp, Warning, TEXT("actor detected : %s"), *DetectedPawns[i]->GetName());
+		/// we need to first check if the actor is a tree, another bird, or the player. 
+		/* if there is a */
+		if (DetectedPawns[i]->IsA(ABird::StaticClass())) /// if the detected pawn is a bird, 
 		{
-			/// we need to first check if the actor is a tree, another bird, or the player. 
-			/* if there is a */
-			if (DetectedPawns[i]->IsA(ABird::StaticClass())) /// if the detected pawn is a bird, 
-			{
-				///add the bird to the flock manager?
-				UE_LOG(LogTemp, Warning, TEXT("added"));
-			}
+			///add the bird to the flock manager?
+			UE_LOG(LogTemp, Warning, TEXT("added"));
+			TArray<AActor*>test;
+			test.AddUnique(DetectedPawns[i]);
+			Manager->MergeFlock(test);
 		}
 	}
-	else if (bisEvading)
-	{
-		///if we see the controller
-	}
+
 
 }
 

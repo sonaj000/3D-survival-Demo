@@ -13,6 +13,7 @@
 class UBoxComponent;
 class UAIPerceptionComponent;
 class UAISenseConfig_Sight;
+class AFlockManager;
 
 UCLASS()
 class LEARN_API ABirdController : public AAIController
@@ -87,6 +88,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 		AActor* Holder;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flocking")
+		AFlockManager* Manager;
 
 public:
 
