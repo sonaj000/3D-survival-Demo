@@ -105,8 +105,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "materials")
 		UMaterial* FlockMat;
-
-
+	UPROPERTY()
+		TArray<AActor*>testarray;
 
 
 

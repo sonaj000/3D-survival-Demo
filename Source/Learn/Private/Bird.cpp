@@ -2,6 +2,7 @@
 
 
 #include "Bird.h"
+#include "AIController.h"
 
 // Sets default values
 ABird::ABird()

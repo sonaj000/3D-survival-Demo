@@ -110,6 +110,8 @@ void ABirdController::Evading()
 void ABirdController::Flocking()
 {
 	bisFlocking = true;
+	UE_LOG(LogTemp, Warning, TEXT("flocking"));
+	Manager->MergeFlock(testarray);
 	/* the flocking logic should be managed by a flock manager. we can just have the boxes either stack on top of each other */
 	//import a flockmanager. 
 	/*flock manager should keep track of all the birds on the level via get all actors of class function to store them all in a array
@@ -184,9 +186,7 @@ void ABirdController::OnPawnDetected(const TArray<AActor*>& DetectedPawns)
 		{
 			///add the bird to the flock manager?
 			UE_LOG(LogTemp, Warning, TEXT("added"));
-			TArray<AActor*>test;
-			test.AddUnique(DetectedPawns[i]);
-			Manager->MergeFlock(test);
+			testarray.AddUnique(DetectedPawns[i]);
 		}
 	}
 

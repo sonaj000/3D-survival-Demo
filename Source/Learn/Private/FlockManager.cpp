@@ -4,6 +4,9 @@
 #include "FlockManager.h"
 #include "Bird.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/Pawn.h"
+#include "AIController.h"
+#include "BirdController.h"
 
 // Sets default values
 AFlockManager::AFlockManager()
@@ -26,15 +29,26 @@ void AFlockManager::Initialize()
 
 void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 {
+	FVector midpoint = FVector(0, 0, 0);
+	UE_LOG(LogTemp, Warning, TEXT("mergeflock size :%d"), NewFlock.Num());
+	for (int i{ 0 }; i < NewFlock.Num(); i++)
+	{
+		midpoint += NewFlock[i]->GetActorLocation();
+	}
 	for (AActor* member : NewFlock)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("testing  %s"), *member->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
+		APawn*Recasted = CastChecked<APawn>(member);
+		ABirdController*RC = Cast<ABirdController>(Recasted->GetController());
+		RC->MoveToLocation(midpoint);
+		UE_LOG(LogTemp, Warning, TEXT("move to midpoint"));
 		//if (GEngine)
 		//{
 		//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
 		//}
 	}
 }
+
 
 
 
