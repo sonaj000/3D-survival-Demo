@@ -30,6 +30,8 @@ public:
 	UFUNCTION()
 		void MergeFlock(TArray<AActor*>NewFlock);
 
+	UFUNCTION()
+		void DestroyFlock(TArray<AActor*>NewFlock, FVector spawnloc);
 
 protected:
 	// Called when the game starts or when spawned

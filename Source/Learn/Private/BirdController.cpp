@@ -53,6 +53,8 @@ void ABirdController::BeginPlay()
 
 	FTimerHandle Testing;
 	GetWorld()->GetTimerManager().SetTimer(Testing, this, &ABirdController::Flocking, 5.0f,true); 
+
+	testarray.AddUnique(this->GetPawn());
 }
 
 void ABirdController::OnPossess(APawn* cPawn)

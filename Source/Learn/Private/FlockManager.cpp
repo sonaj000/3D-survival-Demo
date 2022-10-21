@@ -7,6 +7,7 @@
 #include "GameFramework/Pawn.h"
 #include "AIController.h"
 #include "BirdController.h"
+#include "BigBird.h"
 
 // Sets default values
 AFlockManager::AFlockManager()
@@ -34,19 +35,45 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 	for (int i{ 0 }; i < NewFlock.Num(); i++)
 	{
 		midpoint += NewFlock[i]->GetActorLocation();
+		UE_LOG(LogTemp, Warning, TEXT("locations are :%s"), *midpoint.ToString());
 	}
 	for (AActor* member : NewFlock)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
 		APawn*Recasted = CastChecked<APawn>(member);
 		ABirdController*RC = Cast<ABirdController>(Recasted->GetController());
-		RC->MoveToLocation(midpoint);
+		FVector d = midpoint / 2;
+		RC->MoveToLocation(d);
+		UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *d.ToString());
+
 		UE_LOG(LogTemp, Warning, TEXT("move to midpoint"));
+
+
 		//if (GEngine)
 		//{
 		//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
 		//}
 	}
+	FTimerHandle DD;
+	FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock,midpoint);
+	GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.5f, false);
+}
+
+void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	for (AActor* member : NewFlock)
+	{
+		AllBirds.Remove(member);
+		member->Destroy();
+	}
+	//spawn big bird at midpoint
+	GetWorld()->SpawnActor<ABigBird>(SpawnParams);
+
+	UE_LOG(LogTemp, Warning, TEXT("spawn big bird"));
+
 }
 
 
