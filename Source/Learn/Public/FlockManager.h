@@ -8,6 +8,7 @@
 
 
 class ABird;
+class ABigBird;
 
 UCLASS()
 class LEARN_API AFlockManager : public AActor
@@ -22,6 +23,8 @@ public:
 
 	TMap<int,TArray<AActor*>>Groups;
 
+	UPROPERTY(VisibleAnywhere, Category = "Merge")
+	TSubclassOf<ABigBird>NewBB;
 
 
 	UFUNCTION()

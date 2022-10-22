@@ -9,6 +9,7 @@
 #include "BirdController.h"
 #include "BigBird.h"
 
+
 // Sets default values
 AFlockManager::AFlockManager()
 {
@@ -70,7 +71,7 @@ void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc)
 		member->Destroy();
 	}
 	//spawn big bird at midpoint
-	GetWorld()->SpawnActor<ABigBird>(SpawnParams);
+	ABigBird* newtest = GetWorld()->SpawnActor<ABigBird>(NewBB, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 
 	UE_LOG(LogTemp, Warning, TEXT("spawn big bird"));
 
