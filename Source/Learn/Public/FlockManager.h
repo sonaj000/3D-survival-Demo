@@ -24,6 +24,8 @@ public:
 
 	TMap<int,TArray<AActor*>>Groups;
 
+	UPROPERTY(VisibleAnywhere, Category = "Merge")
+	TSubclassOf<ABigBird>NewBB;
 
 
 	UFUNCTION()
