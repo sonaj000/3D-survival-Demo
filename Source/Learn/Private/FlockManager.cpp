@@ -58,7 +58,7 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 	}
 	FTimerHandle DD;
 	FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock,rm);
-	GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.5, false);
+	GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
 
 }
 
@@ -103,8 +103,11 @@ void AFlockManager::tf()
 			if (!birdie->IsA(ABigBird::StaticClass()))
 			{
 				APawn* Recasted = CastChecked<APawn>(birdie);
+				ABird* Bir = Cast<ABird>(birdie);
 				ABirdController* R = Cast<ABirdController>(Recasted->GetController());
+				//Bir->bcanDetect = true; ???maybe need. 
 				R->Flocking();
+				UE_LOG(LogTemp, Warning, TEXT("birds are flocking"));
 			}
 		}
 	}
