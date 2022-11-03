@@ -8,6 +8,7 @@
 #include "AIController.h"
 #include "BirdController.h"
 #include "BigBird.h"
+#include "Math/UnrealMathUtility.h"
 
 // Sets default values
 AFlockManager::AFlockManager()
@@ -30,6 +31,7 @@ void AFlockManager::Initialize()
 
 void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 {
+	UE_LOG(LogTemp, Warning, TEXT("mergeflock"));
 	FVector midpoint = FVector(0, 0, 0);
 	UE_LOG(LogTemp, Warning, TEXT("mergeflock size :%d"), NewFlock.Num());
 	for (int i{ 0 }; i < NewFlock.Num(); i++)
@@ -37,6 +39,7 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		midpoint += NewFlock[i]->GetActorLocation();
 		UE_LOG(LogTemp, Warning, TEXT("locations are :%s"), *midpoint.ToString());
 	}
+	FVector rm = midpoint / 2;
 	for (AActor* member : NewFlock)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
@@ -46,8 +49,6 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		RC->MoveToLocation(d);
 		UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *d.ToString());
 
-		UE_LOG(LogTemp, Warning, TEXT("move to midpoint"));
-
 
 		//if (GEngine)
 		//{
@@ -55,12 +56,14 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		//}
 	}
 	FTimerHandle DD;
-	FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock,midpoint);
-	GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.5f, false);
+	FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock,rm);
+	GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.5, false);
+
 }
 
 void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc)
 {
+	UE_LOG(LogTemp, Warning, TEXT("destroy flock"));
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -69,10 +72,47 @@ void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc)
 		AllBirds.Remove(member);
 		member->Destroy();
 	}
-	//spawn big bird at midpoint
-	GetWorld()->SpawnActor<ABigBird>(SpawnParams);
 
-	UE_LOG(LogTemp, Warning, TEXT("spawn big bird"));
+
+	ABigBird* TestBird = GetWorld()->SpawnActor<ABigBird>(BB, spawnloc, FRotator::ZeroRotator, SpawnParams);
+	AllBirds.AddUnique(TestBird);
+
+	UE_LOG(LogTemp, Warning, TEXT("spawn big bird loc:%s"), *spawnloc.ToString());
+
+	//
+	//FTransform ReturnTransform;
+	//ReturnTransform.SetLocation(FVector(-20170.0, -6710.0, 100));
+	//ReturnTransform.SetRotation(FRotator::ZeroRotator.Quaternion());
+
+	//ABird* t = GetWorld()->SpawnActor<ABird>(MyActorClass, ReturnTransform);
+
+}
+
+void AFlockManager::CheckUnique(TArray<AActor*>RF)
+{
+	Cool.AddUnique(RF);
+}
+
+void AFlockManager::tf()
+{
+	/* so basically we will go through our array of pointers to arrays made up of pointers to actors and for every pointer in cool(pointer to an array), we will randomly pick a pointer(to an actor) in that array
+	 and recast it to a pawn, get the controller aka whatever we are doing already in mergeflock and then call upon the mergeflock function. */
+	if ( Cool.Num() > 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("number of unique arrays in there :%d"), Cool.Num());
+		for (TArray PR : Cool)
+		{
+			int length = PR.Num();
+			UE_LOG(LogTemp, Warning, TEXT("length of the array is :%d"), length);
+			int randnum = FMath::RandRange(0, length);
+			UE_LOG(LogTemp, Warning, TEXT("randnum :%d"), randnum);
+			AActor* cl = PR[0];
+			APawn* Recasted = CastChecked<APawn>(cl);
+			ABirdController* BC = Cast<ABirdController>(Recasted->GetController());
+			MergeFlock(BC->testarray);
+		}
+	}
+	Cool.Empty();
 
 }
 

@@ -30,18 +30,6 @@ protected:
 
 	virtual void OnPossess(APawn* thePawn) override;
 
-	UPROPERTY()
-		bool bisChasing;
-
-	UPROPERTY()
-		bool bisEvading;
-
-	UPROPERTY()
-		bool bisFlocking;
-
-	UPROPERTY()
-		int flocknumber;
-
 	UFUNCTION()
 		void Chasing();
 
@@ -59,8 +47,8 @@ protected:
 
 protected:
 	///ai senses here
-	UFUNCTION(BlueprintCallable)
-		void OnPawnDetected(const TArray<AActor*>& DetectedPawns);
+	//UFUNCTION(BlueprintCallable)
+		//void OnPawnDetected(const TArray<AActor*>& DetectedPawns);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Perception")
 		float SightRadius;
@@ -89,13 +77,25 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 		AActor* Holder;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flocking")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Flocking")
 		AFlockManager* Manager;
 
 public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY()
+		bool bisChasing;
+
+	UPROPERTY()
+		bool bisEvading;
+
+	UPROPERTY()
+		bool bisFlocking;
+
+	UPROPERTY()
+		int flocknumber;
 
 	UPROPERTY(EditAnywhere, Category = "materials")
 		UMaterial* ChaseMat;

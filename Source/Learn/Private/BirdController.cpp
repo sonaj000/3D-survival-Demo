@@ -27,7 +27,7 @@ ABirdController::ABirdController(const FObjectInitializer& ObjectInitializer)
 	SightConfig->SetMaxAge(SightAge); // how long the sight is remembered
 
 	GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation()); //if we utilize more than one sense 
-	GetPerceptionComponent()->OnPerceptionUpdated.AddDynamic(this, &ABirdController::OnPawnDetected);
+	//GetPerceptionComponent()->OnPerceptionUpdated.AddDynamic(this, &ABirdController::OnPawnDetected);
 	GetPerceptionComponent()->ConfigureSense(*SightConfig);
 
 	bisCharacterDetected = false;
@@ -42,7 +42,6 @@ ABirdController::ABirdController(const FObjectInitializer& ObjectInitializer)
 	EvadeMat = CreateDefaultSubobject<UMaterial>(TEXT("Evade Material"));
 	FlockMat = CreateDefaultSubobject<UMaterial>(TEXT("Flock Material"));
 
-	Manager = Cast<AFlockManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AFlockManager::StaticClass()));
 
 }
 
@@ -52,9 +51,13 @@ void ABirdController::BeginPlay()
 
 
 	FTimerHandle Testing;
-	GetWorld()->GetTimerManager().SetTimer(Testing, this, &ABirdController::Flocking, 5.0f,true); 
+	GetWorld()->GetTimerManager().SetTimer(Testing, this, &ABirdController::Flocking, 1.0f,true); 
 
 	testarray.AddUnique(this->GetPawn());
+
+	Manager = Cast<AFlockManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AFlockManager::StaticClass()));
+
+	UE_LOG(LogTemp, Warning, TEXT("managert name is :%s"), *Manager->GetName())
 }
 
 void ABirdController::OnPossess(APawn* cPawn)
@@ -64,8 +67,8 @@ void ABirdController::OnPossess(APawn* cPawn)
 
 void ABirdController::Chasing()
 {
-	//StateChange(1);
-
+	StateChange(1);
+	//need to change movement speed in state change
 	try
 	{
 		UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
@@ -83,11 +86,12 @@ void ABirdController::Chasing()
 void ABirdController::Evading()
 {
 	/* select a random location on the navmesh, double check it's distance from the player is greater than x distance and if not repick a location*/
+	StateChange(2);
 	UE_LOG(LogTemp, Warning, TEXT("Evading"));
 	UNavigationSystemV1* NavArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	FVector RandomLoc = FVector(0, 0, 0);
 	FNavLocation ResultLocation;
-	bool bSuccess = NavArea->GetRandomReachablePointInRadius(NavArea->GetWorldBounds().GetCenter(), 2000.0f, ResultLocation);
+	bool bSuccess = NavArea->GetRandomReachablePointInRadius(NavArea->GetWorldBounds().GetCenter(), 5000.0f, ResultLocation);
 	if (bSuccess)
 	{
 		RandomLoc = ResultLocation;
@@ -97,7 +101,7 @@ void ABirdController::Evading()
 	/// <summary>
 	/// maybe make this a while loop instead of if. 
 	/// </summary>
-	if (FVector::Distance(RandomLoc, PlayerLoc) > 2000.0f)
+	if (FVector::Distance(RandomLoc, PlayerLoc) > 4000.0f)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
 		this->MoveToLocation(RandomLoc);
@@ -111,9 +115,38 @@ void ABirdController::Evading()
 
 void ABirdController::Flocking()
 {
+	StateChange(3);
 	bisFlocking = true;
-	UE_LOG(LogTemp, Warning, TEXT("flocking"));
-	Manager->MergeFlock(testarray);
+	if (testarray.Num() > 1)
+	{
+		//Manager->MergeFlock(testarray);
+		Manager->CheckUnique(testarray);
+		Manager->tf();
+		UE_LOG(LogTemp, Warning, TEXT("tf function called"));
+
+	}
+	else
+	{
+		UNavigationSystemV1* NavArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+		FVector RandomLoc = FVector(0, 0, 0);
+		FNavLocation ResultLocation;
+		bool bSuccess = NavArea->GetRandomReachablePointInRadius(NavArea->GetWorldBounds().GetCenter(), 5000.0f, ResultLocation);
+		if (bSuccess)
+		{
+			RandomLoc = ResultLocation;
+		}
+		///FVector RandomLoc = NavArea->GetRandomReachablePointInRadius(this, NavArea->GetWorldBounds().GetCenter(), 2000.0f); // change the radius of the randomization
+		FVector PlayerLoc = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
+		/// <summary>
+		/// maybe make this a while loop instead of if. 
+		/// </summary>
+		if (FVector::Distance(RandomLoc, PlayerLoc) > 4000.0f)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
+			this->MoveToLocation(RandomLoc);
+		}
+	}
+
 	/* the flocking logic should be managed by a flock manager. we can just have the boxes either stack on top of each other */
 	//import a flockmanager. 
 	/*flock manager should keep track of all the birds on the level via get all actors of class function to store them all in a array
@@ -154,46 +187,26 @@ void ABirdController::StateChange(int statenum)
 		bisChasing = true;
 		bisEvading = false;
 		bisFlocking = false;
-		//Test->SetMaterial(0, ChaseMat); // set material here. might make this a seperate function
+		Test->SetMaterial(0, ChaseMat); // set material here. might make this a seperate function
 		break;
 
 	case 2:
 		bisChasing = false;
 		bisEvading = true;
 		bisFlocking = false;
-		//Test->SetMaterial(0, EvadeMat);
+		Test->SetMaterial(0, EvadeMat);
 		break;
 
 	case 3:
 		bisChasing = false;
 		bisEvading = true;
 		bisFlocking = false;
-		//Test->SetMaterial(0, FlockMat);
+		Test->SetMaterial(0, FlockMat);
 		break;
 	}
 
 }
 
-void ABirdController::OnPawnDetected(const TArray<AActor*>& DetectedPawns)
-{
-	/*take a look at which state we are in rn.*/
-	UE_LOG(LogTemp, Warning, TEXT("detected"));
-
-	for (size_t i{ 0 }; i < DetectedPawns.Num(); i++)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("actor detected : %s"), *DetectedPawns[i]->GetName());
-		/// we need to first check if the actor is a tree, another bird, or the player. 
-		/* if there is a */
-		if (DetectedPawns[i]->IsA(ABird::StaticClass())) /// if the detected pawn is a bird, 
-		{
-			///add the bird to the flock manager?
-			UE_LOG(LogTemp, Warning, TEXT("added"));
-			testarray.AddUnique(DetectedPawns[i]);
-		}
-	}
-
-
-}
 
 void ABirdController::Tick(float DeltaTime)
 {
