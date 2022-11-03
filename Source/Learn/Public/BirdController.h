@@ -31,15 +31,6 @@ protected:
 	virtual void OnPossess(APawn* thePawn) override;
 
 	UFUNCTION()
-		void Chasing();
-
-	UFUNCTION()
-		void Evading();
-
-	UFUNCTION()
-		void Flocking();
-
-	UFUNCTION()
 		void StateChange(int statenum);
 
 	UPROPERTY()
@@ -84,6 +75,15 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION()
+		void Chasing();
+
+	UFUNCTION()
+		void Evading();
+
+	UFUNCTION()
+		void Flocking();
 
 	UPROPERTY()
 		bool bisChasing;

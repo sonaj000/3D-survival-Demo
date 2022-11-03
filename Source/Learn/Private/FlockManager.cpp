@@ -74,7 +74,6 @@ void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc)
 		member->Destroy();
 	}
 
-
 	ABigBird* TestBird = GetWorld()->SpawnActor<ABigBird>(BB, spawnloc, FRotator::ZeroRotator, SpawnParams);
 	AllBirds.AddUnique(TestBird);
 
@@ -96,8 +95,19 @@ void AFlockManager::CheckUnique(TArray<AActor*>RF)
 
 void AFlockManager::tf()
 {
-	/* so basically we will go through our array of pointers to arrays made up of pointers to actors and for every pointer in cool(pointer to an array), we will randomly pick a pointer(to an actor) in that array
-	 and recast it to a pawn, get the controller aka whatever we are doing already in mergeflock and then call upon the mergeflock function. */
+	//call phases here
+	if (AllBirds.Num() > 0)
+	{
+		for (AActor* birdie : AllBirds)
+		{
+			if (!birdie->IsA(ABigBird::StaticClass()))
+			{
+				APawn* Recasted = CastChecked<APawn>(birdie);
+				ABirdController* R = Cast<ABirdController>(Recasted->GetController());
+				R->Flocking();
+			}
+		}
+	}
 	if ( Cool.Num() > 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("number of unique arrays in there :%d"), Cool.Num());
@@ -111,6 +121,7 @@ void AFlockManager::tf()
 			APawn* Recasted = CastChecked<APawn>(cl);
 			ABirdController* BC = Cast<ABirdController>(Recasted->GetController());
 			MergeFlock(BC->testarray);
+			BC->testarray.Empty();
 		}
 	}
 	Cool.Empty();
@@ -126,6 +137,9 @@ void AFlockManager::BeginPlay()
 	Super::BeginPlay();
 
 	Initialize();
+
+	FTimerHandle Testing;
+	GetWorld()->GetTimerManager().SetTimer(Testing, this, &AFlockManager::tf, 1.0f,true); 
 	
 }
 

@@ -50,8 +50,8 @@ void ABirdController::BeginPlay()
 	Super::BeginPlay();
 
 
-	FTimerHandle Testing;
-	GetWorld()->GetTimerManager().SetTimer(Testing, this, &ABirdController::Flocking, 1.0f,true); 
+	//FTimerHandle Testing;
+	//GetWorld()->GetTimerManager().SetTimer(Testing, this, &ABirdController::Flocking, 1.0f,true); 
 
 	testarray.AddUnique(this->GetPawn());
 
@@ -121,9 +121,8 @@ void ABirdController::Flocking()
 	{
 		//Manager->MergeFlock(testarray);
 		Manager->CheckUnique(testarray);
-		Manager->tf();
+		//Manager->tf();
 		UE_LOG(LogTemp, Warning, TEXT("tf function called"));
-
 	}
 	else
 	{
@@ -146,6 +145,7 @@ void ABirdController::Flocking()
 			this->MoveToLocation(RandomLoc);
 		}
 	}
+
 
 	/* the flocking logic should be managed by a flock manager. we can just have the boxes either stack on top of each other */
 	//import a flockmanager. 

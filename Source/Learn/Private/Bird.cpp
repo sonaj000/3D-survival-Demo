@@ -51,7 +51,7 @@ void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 			if (OtherActor != this && OtherActor->IsA(ABird::StaticClass()))
 			{
 				Remote->testarray.AddUnique(OtherActor);
-				UE_LOG(LogTemp, Warning, TEXT("actor added"));
+				UE_LOG(LogTemp, Warning, TEXT("actor added :%s"), *OtherActor->GetName());
 				bcanDetect = false;
 			}
 		}
