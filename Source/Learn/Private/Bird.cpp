@@ -46,7 +46,7 @@ void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 {
 	if (Remote)
 	{
-		if (bcanDetect && Remote->bisFlocking)
+		if (bcanDetect && Remote->bisFlocking && Remote->testarray.Num() <= 4) //do not add more birds if flock max is 4. 
 		{
 			if (OtherActor != this && OtherActor->IsA(ABird::StaticClass()))
 			{

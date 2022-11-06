@@ -34,31 +34,85 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 {
 	UE_LOG(LogTemp, Warning, TEXT("mergeflock"));
 	FVector midpoint = FVector(0, 0, 0);
+
+	//pase this out by logic depending on the size of the new flock
+	//will scale from merge number of 2 to 4. 
+
 	UE_LOG(LogTemp, Warning, TEXT("mergeflock size :%d"), NewFlock.Num());
-	for (int i{ 0 }; i < NewFlock.Num(); i++)
+
+	if (NewFlock.Num() == 2)
 	{
-		midpoint += NewFlock[i]->GetActorLocation();
-		UE_LOG(LogTemp, Warning, TEXT("locations are :%s"), *midpoint.ToString());
-	}
-	FVector rm = midpoint / 2;
-	for (AActor* member : NewFlock)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
-		APawn*Recasted = CastChecked<APawn>(member);
-		ABirdController*RC = Cast<ABirdController>(Recasted->GetController());
-		FVector d = midpoint / 2;
-		RC->MoveToLocation(d);
-		UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *d.ToString());
+		for (int i{ 0 }; i < NewFlock.Num(); i++)
+		{
+			midpoint += NewFlock[i]->GetActorLocation();
+			UE_LOG(LogTemp, Warning, TEXT("locations are :%s"), *midpoint.ToString());
+		}
+		FVector rm = midpoint / 2;
+		for (AActor* member : NewFlock)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
+			APawn* Recasted = CastChecked<APawn>(member);
+			ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
+			FVector d = midpoint / 2;
+			RC->MoveToLocation(d);
+			UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *d.ToString());
 
 
-		//if (GEngine)
-		//{
-		//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
-		//}
+			//if (GEngine)
+			//{
+			//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
+			//}
+		}
+		FTimerHandle DD;
+		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, rm);
+		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
 	}
-	FTimerHandle DD;
-	FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock,rm);
-	GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
+	else if (NewFlock.Num() == 3)
+	{
+		midpoint = (NewFlock[0]->GetActorLocation() + NewFlock[1]->GetActorLocation()) / 2; //get the midpoint between the first two birds
+		midpoint = (midpoint + NewFlock[2]->GetActorLocation()) / 2; //midpoint between last bird and earlier midpoint. 
+		for (AActor* member : NewFlock)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
+			APawn* Recasted = CastChecked<APawn>(member);
+			ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
+			RC->MoveToLocation(midpoint);
+			UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *midpoint.ToString());
+
+			//if (GEngine)
+			//{
+			//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
+			//}
+		}
+		FTimerHandle DD;
+		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, midpoint);
+		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
+	}
+	else if (NewFlock.Num() == 4)
+	{
+		midpoint = (NewFlock[0]->GetActorLocation() + NewFlock[1]->GetActorLocation()) / 2;
+		FVector midpoint2 = (NewFlock[2]->GetActorLocation() + NewFlock[3]->GetActorLocation()) / 2;
+		midpoint = (midpoint + midpoint2) / 2; 
+		for (AActor* member : NewFlock)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
+			APawn* Recasted = CastChecked<APawn>(member);
+			ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
+			RC->MoveToLocation(midpoint);
+			UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *midpoint.ToString());
+
+			//if (GEngine)
+			//{
+			//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
+			//}
+		}
+		FTimerHandle DD;
+		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, midpoint);
+		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
+
+
+	}
+	
 
 }
 
