@@ -30,9 +30,6 @@ protected:
 
 	virtual void OnPossess(APawn* thePawn) override;
 
-	UFUNCTION()
-		void StateChange(int statenum);
-
 	UPROPERTY()
 		FVector CurrLoc;
 
@@ -107,6 +104,9 @@ public:
 		UMaterial* FlockMat;
 	UPROPERTY()
 		TArray<AActor*>testarray;
+
+	UFUNCTION()
+		void StateChange(int statenum);
 
 
 

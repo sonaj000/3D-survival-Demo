@@ -11,6 +11,11 @@
 class ABird;
 class ABigBird;
 
+UENUM()
+enum BirdState { IDLE,EVADE, CHASE, MERGE };
+UENUM()
+enum BirdAction { ON_ENTER, ON_UPDATE };
+
 UCLASS()
 class LEARN_API AFlockManager : public AActor
 {
@@ -22,11 +27,12 @@ public:
 
 	TArray<AActor*>AllBirds;
 
-	TMap<int,TArray<AActor*>>Groups;
-
 	UPROPERTY(VisibleAnywhere, Category = "Merge")
 	TSubclassOf<ABigBird>NewBB;
 
+
+	UPROPERTY(EditDefaultsOnly, Category = "bigbird")
+		TSubclassOf<ABigBird>BB;
 
 	UFUNCTION()
 		void Initialize();
@@ -43,18 +49,56 @@ public:
 	UFUNCTION()
 		void tf(); 
 
+	UFUNCTION()
+		void chasePhase();
+
+	UFUNCTION()
+		void evadePhase();
+	UFUNCTION()
+		void Temp();
+
+	UPROPERTY()
+		int pn;
+
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "bigbird")
-	TSubclassOf<ABigBird>BB;
-
 	UPROPERTY(EditAnywhere, Category = "bigbird")
 		TSubclassOf<ABird> MyActorClass = ABird::StaticClass();
 
 	TArray<TArray<AActor*>>Cool;
+
+	UPROPERTY()
+		TMap<AActor*, bool> GroupChecker;
+
+private:
+	UPROPERTY()
+		TEnumAsByte<BirdState>CurrentState = BirdState::IDLE;;
+
+	UPROPERTY()
+		TEnumAsByte<BirdAction>CurrentAction = BirdAction::ON_ENTER;;
+
+	UFUNCTION()
+		void StateUpdate();
+
+	UFUNCTION()
+		void SetBossState(BirdState newState);
+
+	void Idle_Enter();
+	void Idle_Update();
+	void Idle_Exit();
+
+	void Chase_Enter();
+	void Chase_Update();
+	void Chase_Exit();
+
+	void Merge_Enter();
+	void Merge_Update();
+	void Merge_Exit();
+
+
 
 public:	
 	// Called every frame

@@ -21,7 +21,12 @@ AFlockManager::AFlockManager()
 
 void AFlockManager::Initialize()
 {
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABird::StaticClass(),AllBirds);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABird::StaticClass(),AllBirds); // fill up array for all actors
+	for (AActor* D : AllBirds) //fill up map to check if bird in a group
+	{
+		GroupChecker.Add(D, false);
+	}
+	UE_LOG(LogTemp, Warning, TEXT("number of birds in map is :%d"), GroupChecker.Num());
 	//cast to bird
 	if (GEngine)
 	{
@@ -45,24 +50,26 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		for (int i{ 0 }; i < NewFlock.Num(); i++)
 		{
 			midpoint += NewFlock[i]->GetActorLocation();
-			UE_LOG(LogTemp, Warning, TEXT("locations are :%s"), *midpoint.ToString());
+
 		}
 		FVector rm = midpoint / 2;
 		for (AActor* member : NewFlock)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
+			//UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
 			APawn* Recasted = CastChecked<APawn>(member);
 			ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
 			FVector d = midpoint / 2;
-			RC->MoveToLocation(d);
-			UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *d.ToString());
+			if (RC)
+			{
+				RC->MoveToLocation(d);
+			}
 
+			AllBirds.Remove(member);
+			GroupChecker.Remove(member);
+			member->Destroy();
 
-			//if (GEngine)
-			//{
-			//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
-			//}
 		}
+
 		FTimerHandle DD;
 		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, rm);
 		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
@@ -73,11 +80,11 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		midpoint = (midpoint + NewFlock[2]->GetActorLocation()) / 2; //midpoint between last bird and earlier midpoint. 
 		for (AActor* member : NewFlock)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
+
 			APawn* Recasted = CastChecked<APawn>(member);
 			ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
 			RC->MoveToLocation(midpoint);
-			UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *midpoint.ToString());
+			//UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *midpoint.ToString());
 
 			//if (GEngine)
 			//{
@@ -95,11 +102,11 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		midpoint = (midpoint + midpoint2) / 2; 
 		for (AActor* member : NewFlock)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
+			//UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
 			APawn* Recasted = CastChecked<APawn>(member);
 			ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
 			RC->MoveToLocation(midpoint);
-			UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *midpoint.ToString());
+			//UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *midpoint.ToString());
 
 			//if (GEngine)
 			//{
@@ -108,11 +115,11 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		}
 		FTimerHandle DD;
 		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, midpoint);
-		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
+		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 0.5, false);
 
 
 	}
-	
+
 
 }
 
@@ -125,10 +132,11 @@ void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc)
 	for (AActor* member : NewFlock)
 	{
 		AllBirds.Remove(member);
+		GroupChecker.Remove(member);
 		member->Destroy();
 	}
 
-	ABigBird* TestBird = GetWorld()->SpawnActor<ABigBird>(BB, spawnloc, FRotator::ZeroRotator, SpawnParams);
+	AActor* TestBird = GetWorld()->SpawnActor<AActor>(BB, spawnloc, FRotator::ZeroRotator, SpawnParams);
 	AllBirds.AddUnique(TestBird);
 
 	UE_LOG(LogTemp, Warning, TEXT("spawn big bird loc:%s"), *spawnloc.ToString());
@@ -144,7 +152,22 @@ void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc)
 
 void AFlockManager::CheckUnique(TArray<AActor*>RF)
 {
-	Cool.AddUnique(RF);
+	bool counter = false;
+	for (AActor* &bird : RF)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Actor in the array : %s"), *bird->GetName());
+		if (GroupChecker.Contains(bird) && GroupChecker[bird] == false)
+		{
+			GroupChecker[bird] = true;
+			counter = true;
+			UE_LOG(LogTemp, Warning, TEXT("wtf"));
+		}
+	}
+	if (counter == true)
+	{
+		Cool.AddUnique(RF);
+		UE_LOG(LogTemp, Warning, TEXT("unique array added"));
+	}
 }
 
 void AFlockManager::tf()
@@ -154,15 +177,24 @@ void AFlockManager::tf()
 	{
 		for (AActor* birdie : AllBirds)
 		{
-			if (!birdie->IsA(ABigBird::StaticClass()))
+			if (birdie != nullptr && !birdie->IsA(ABigBird::StaticClass()))
 			{
-				APawn* Recasted = CastChecked<APawn>(birdie);
+				APawn* Recasted = Cast<APawn>(birdie);
 				ABird* Bir = Cast<ABird>(birdie);
 				ABirdController* R = Cast<ABirdController>(Recasted->GetController());
-				//Bir->bcanDetect = true; ???maybe need. 
-				R->Flocking();
-				UE_LOG(LogTemp, Warning, TEXT("birds are flocking"));
+				//Bir->bcanDetect = true; //???maybe need. 
+				//UE_LOG(LogTemp, Warning, TEXT("bcandetect is : %s"), (Bir->bcanDetect ? TEXT("true") : TEXT("false")));
+				try
+				{
+					R->Flocking();
+				}
+				catch (const std::exception&)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("issues with flocking"));
+				}
+
 			}
+
 		}
 	}
 	if ( Cool.Num() > 0)
@@ -171,21 +203,68 @@ void AFlockManager::tf()
 		for (TArray PR : Cool)
 		{
 			int length = PR.Num();
-			UE_LOG(LogTemp, Warning, TEXT("length of the array is :%d"), length);
+			//UE_LOG(LogTemp, Warning, TEXT("length of the array is :%d"), length);
 			int randnum = FMath::RandRange(0, length);
-			UE_LOG(LogTemp, Warning, TEXT("randnum :%d"), randnum);
 			AActor* cl = PR[0];
 			APawn* Recasted = CastChecked<APawn>(cl);
 			ABirdController* BC = Cast<ABirdController>(Recasted->GetController());
-			MergeFlock(BC->testarray);
-			BC->testarray.Empty();
+			if (BC)
+			{
+				MergeFlock(BC->testarray);
+				BC->testarray.Empty();
+			}
 		}
+		Cool.Empty();
 	}
-	Cool.Empty();
+
 
 }
 
+void AFlockManager::chasePhase()
+{
+	//call phases here
+	if (AllBirds.Num() > 0)
+	{
+		for (AActor* birdie : AllBirds)
+		{
+			if (birdie->IsA(ABird::StaticClass()))
+			{
+				APawn* Recasted = CastChecked<APawn>(birdie);
+				ABird* Bir = Cast<ABird>(birdie);
+				ABirdController* R = Cast<ABirdController>(Recasted->GetController());
+				//Bir->bcanDetect = true; ???maybe need. 
+				R->Chasing();
+				UE_LOG(LogTemp, Warning, TEXT("birds are chasing"));
+			}
+		}
+	}
+}
 
+void AFlockManager::evadePhase()
+{
+	//call phases here
+	if (AllBirds.Num() > 0)
+	{
+		for (AActor* birdie : AllBirds)
+		{
+			if (birdie->IsA(ABird::StaticClass()))
+			{
+				APawn* Recasted = CastChecked<APawn>(birdie);
+				ABird* Bir = Cast<ABird>(birdie);
+				ABirdController* R = Cast<ABirdController>(Recasted->GetController());
+				//Bir->bcanDetect = true; ???maybe need. 
+				R->Evading();
+				UE_LOG(LogTemp, Warning, TEXT("birds are evading"));
+			}
+		}
+	}
+}
+
+void AFlockManager::Temp()
+{
+	pn = FMath::RandRange(0, 2);
+	UE_LOG(LogTemp, Warning, TEXT("random number generator"));
+}
 
 
 // Called when the game starts or when spawned
@@ -194,10 +273,24 @@ void AFlockManager::BeginPlay()
 	Super::BeginPlay();
 
 	Initialize();
+	pn = 0;
+
+	//FActorSpawnParameters SpawnParams;
+	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	//ABigBird* TestBird = GetWorld()->SpawnActor<ABigBird>(BB, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
+	//if (IsValid(TestBird->GetController()))
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("kms"));
+	//}
+	//ABirdController* R = Cast<ABirdController>(TestBird->GetController());
+	//R->Chasing();
 
 	FTimerHandle Testing;
-	GetWorld()->GetTimerManager().SetTimer(Testing, this, &AFlockManager::tf, 1.0f,true); 
-	
+	GetWorld()->GetTimerManager().SetTimer(Testing, this, &AFlockManager::Temp, 4.0f, true);
+
+	FTimerHandle Update;
+	GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::StateUpdate, 1.0f,true); 
 }
 
 // Called every frame
@@ -207,3 +300,148 @@ void AFlockManager::Tick(float DeltaTime)
 
 }
 
+void AFlockManager::StateUpdate()
+{
+	//listing all the states and calling them
+	if (CurrentState == BirdState::IDLE)
+	{
+		if (CurrentAction == BirdAction::ON_ENTER)
+		{
+			Idle_Enter(); //if the state is idle and the action is enter idle, we enter the idle state;
+		}
+		else if (CurrentAction == BirdAction::ON_UPDATE)
+		{
+			Idle_Update();
+		}
+
+	}
+	else if (CurrentState == BirdState::CHASE)
+	{
+		if (CurrentAction == BirdAction::ON_ENTER)
+		{
+			Chase_Enter();
+		}
+		if (CurrentAction == BirdAction::ON_UPDATE)
+		{
+			Chase_Update();
+		}
+
+	}
+	else if (CurrentState == BirdState::MERGE)
+	{
+		if (CurrentAction == BirdAction::ON_ENTER)
+		{
+			Merge_Enter();
+		}
+		if (CurrentAction == BirdAction::ON_UPDATE)
+		{
+			Merge_Update();
+		}
+
+	}
+
+}
+
+void AFlockManager::SetBossState(BirdState newState)
+{
+	switch (CurrentState)
+	{
+	case BirdState::IDLE:
+		break;
+	case BirdState::CHASE:
+		break;
+	case BirdState::MERGE:
+		break;
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("no state implemented"), newState)
+		return;
+	}
+	CurrentState = newState;
+	CurrentAction = BirdAction::ON_ENTER;
+}
+
+void AFlockManager::Idle_Enter()
+{
+
+	CurrentAction = BirdAction::ON_UPDATE;
+
+}
+
+void AFlockManager::Idle_Update()
+{
+	UE_LOG(LogTemp, Warning, TEXT("evading"));
+	evadePhase();
+	if (pn != 0)
+	{
+		Idle_Exit();
+	}
+}
+
+void AFlockManager::Idle_Exit()
+{
+	if (pn == 1)
+	{
+		SetBossState(BirdState::CHASE);
+	}
+	if (pn == 2)
+	{
+		SetBossState(BirdState::MERGE);
+	}
+
+}
+
+void AFlockManager::Chase_Enter()
+{
+	UE_LOG(LogTemp, Warning, TEXT("enter not update"));
+	CurrentAction = BirdAction::ON_UPDATE;
+}
+
+void AFlockManager::Chase_Update()
+{
+	UE_LOG(LogTemp, Warning, TEXT("chasing"));
+	chasePhase();
+	if (pn != 1)
+	{
+		Chase_Exit();
+	}
+}
+
+void AFlockManager::Chase_Exit()
+{
+	if (pn == 0)
+	{
+		SetBossState(BirdState::IDLE);
+	}
+	if (pn == 2)
+	{
+		SetBossState(BirdState::MERGE);
+	}
+}
+
+void AFlockManager::Merge_Enter()
+{
+
+	CurrentAction = BirdAction::ON_UPDATE;
+}
+
+void AFlockManager::Merge_Update()
+{
+	tf();
+	if (pn != 2)
+	{
+		Merge_Exit();
+	}
+
+}
+
+void AFlockManager::Merge_Exit()
+{
+	if (pn == 0)
+	{
+		SetBossState(BirdState::IDLE);
+	}
+	if (pn == 1)
+	{
+		SetBossState(BirdState::CHASE);
+	}
+}

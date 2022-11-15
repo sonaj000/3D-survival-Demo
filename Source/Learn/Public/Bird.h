@@ -10,6 +10,7 @@
 class UBoxComponent;
 class ABirdController;
 
+
 UCLASS()
 class LEARN_API ABird : public ACharacter
 {
@@ -24,6 +25,9 @@ public:
 
 	UPROPERTY()
 		bool bcanDetect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
+		UStaticMeshComponent* BirdMesh;
 
 protected:
 	// Called when the game starts or when spawned
@@ -40,7 +44,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
-		virtual void BeginOverLap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		void BeginOverLap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);

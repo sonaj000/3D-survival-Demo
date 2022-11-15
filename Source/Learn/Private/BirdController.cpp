@@ -9,6 +9,8 @@
 #include "Bird.h"
 #include "AI/NavigationSystemBase.h"
 #include "AI/Navigation/NavigationTypes.h"
+#include"BigBird.h"
+#include "UObject/WeakObjectPtrTemplates.h"
 #include "FlockManager.h"
 
 ABirdController::ABirdController(const FObjectInitializer& ObjectInitializer)
@@ -110,19 +112,17 @@ void ABirdController::Evading()
 	{
 		Evading();
 	}
-
 }
 
 void ABirdController::Flocking()
 {
 	StateChange(3);
-	bisFlocking = true;
-	if (testarray.Num() > 1)
+	if (testarray.Num() > 1 && (this->GetPawn())->IsA(ABird::StaticClass())) //change this to include all birds later. 
 	{
 		//Manager->MergeFlock(testarray);
 		Manager->CheckUnique(testarray);
 		//Manager->tf();
-		UE_LOG(LogTemp, Warning, TEXT("tf function called"));
+		UE_LOG(LogTemp, Warning, TEXT("tf function called: array number is :%d"), testarray.Num());
 	}
 	else
 	{
@@ -141,7 +141,7 @@ void ABirdController::Flocking()
 		/// </summary>
 		if (FVector::Distance(RandomLoc, PlayerLoc) > 4000.0f)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
+			//UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
 			this->MoveToLocation(RandomLoc);
 		}
 	}
@@ -174,35 +174,45 @@ void ABirdController::Flocking()
 	
 	*/
 
-
 }
 
 void ABirdController::StateChange(int statenum)
 { // changing the boolean but also the mesh of the box to indicae which state it is in 
-	ABird* Here = Cast<ABird>(this->GetPawn());
-	UStaticMeshComponent* Test = Cast<UStaticMeshComponent>(Here->GetComponentByClass(UStaticMeshComponent::StaticClass()));
-	switch (statenum)
+
+	if (GetPawn() == nullptr)
 	{
-	case 1:
-		bisChasing = true;
-		bisEvading = false;
-		bisFlocking = false;
-		Test->SetMaterial(0, ChaseMat); // set material here. might make this a seperate function
-		break;
+		UE_LOG(LogTemp, Warning, TEXT("fuck"));
+		return;
 
-	case 2:
-		bisChasing = false;
-		bisEvading = true;
-		bisFlocking = false;
-		Test->SetMaterial(0, EvadeMat);
-		break;
+	}
+	else
+	{
 
-	case 3:
-		bisChasing = false;
-		bisEvading = true;
-		bisFlocking = false;
-		Test->SetMaterial(0, FlockMat);
-		break;
+		AActor* H = Cast<AActor>(this->GetPawn());
+		UStaticMeshComponent* T = Cast<UStaticMeshComponent>(H->GetComponentByClass(UStaticMeshComponent::StaticClass()));
+		switch (statenum)
+		{
+		case 1:
+			bisChasing = true;
+			bisEvading = false;
+			bisFlocking = false;
+			T->SetMaterial(0, ChaseMat); // set material here. might make this a seperate function
+			break;
+
+		case 2:
+			bisChasing = false;
+			bisEvading = true;
+			bisFlocking = false;
+			T->SetMaterial(0, EvadeMat);
+			break;
+
+		case 3:
+			bisChasing = false;
+			bisEvading = false;
+			bisFlocking = true;
+			T->SetMaterial(0, FlockMat);
+			break;
+		}
 	}
 
 }
