@@ -41,7 +41,7 @@ public:
 		void MergeFlock(TArray<AActor*>NewFlock);
 
 	UFUNCTION()
-		void DestroyFlock(TArray<AActor*>NewFlock, FVector spawnloc);
+		void DestroyFlock(TArray<AActor*>NewFlock, FVector spawnloc, int CountNum);
 
 
 		void CheckUnique(TArray<AActor*>RF);

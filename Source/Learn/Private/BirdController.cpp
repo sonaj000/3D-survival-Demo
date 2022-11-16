@@ -117,7 +117,7 @@ void ABirdController::Evading()
 void ABirdController::Flocking()
 {
 	StateChange(3);
-	if (testarray.Num() > 1 && (this->GetPawn())->IsA(ABird::StaticClass())) //change this to include all birds later. 
+	if (testarray.Num() > 1 && (Cast<ABird>(GetPawn())->MergeNum) < 4) //change this to include all birds later. 
 	{
 		//Manager->MergeFlock(testarray);
 		Manager->CheckUnique(testarray);

@@ -13,5 +13,10 @@ UCLASS()
 class LEARN_API ABigBird : public ABird
 {
 	GENERATED_BODY()
+
+public:
+
+	UFUNCTION()
+		void ScaleBird(int MNum);
 	
 };

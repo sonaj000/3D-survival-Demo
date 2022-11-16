@@ -39,6 +39,7 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 {
 	UE_LOG(LogTemp, Warning, TEXT("mergeflock"));
 	FVector midpoint = FVector(0, 0, 0);
+	int mergeCount = 0; //we will use this to figure out the merge count of the birds
 
 	//pase this out by logic depending on the size of the new flock
 	//will scale from merge number of 2 to 4. 
@@ -56,6 +57,7 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		for (AActor* member : NewFlock)
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
+			ABird* bd = Cast<ABird>(member);
 			APawn* Recasted = CastChecked<APawn>(member);
 			ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
 			FVector d = midpoint / 2;
@@ -63,15 +65,11 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 			{
 				RC->MoveToLocation(d);
 			}
-
-			AllBirds.Remove(member);
-			GroupChecker.Remove(member);
-			member->Destroy();
-
+			mergeCount += bd->MergeNum;
 		}
 
 		FTimerHandle DD;
-		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, rm);
+		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, rm, mergeCount);
 		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
 	}
 	else if (NewFlock.Num() == 3)
@@ -80,19 +78,19 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		midpoint = (midpoint + NewFlock[2]->GetActorLocation()) / 2; //midpoint between last bird and earlier midpoint. 
 		for (AActor* member : NewFlock)
 		{
-
+			ABird* bd = Cast<ABird>(member);
 			APawn* Recasted = CastChecked<APawn>(member);
 			ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
 			RC->MoveToLocation(midpoint);
+			mergeCount += bd->MergeNum;
 			//UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *midpoint.ToString());
-
 			//if (GEngine)
 			//{
 			//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
 			//}
 		}
 		FTimerHandle DD;
-		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, midpoint);
+		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, midpoint, mergeCount);
 		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
 	}
 	else if (NewFlock.Num() == 4)
@@ -102,10 +100,11 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		midpoint = (midpoint + midpoint2) / 2; 
 		for (AActor* member : NewFlock)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
+			ABird* bd = Cast<ABird>(member);
 			APawn* Recasted = CastChecked<APawn>(member);
 			ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
 			RC->MoveToLocation(midpoint);
+			mergeCount += bd->MergeNum;
 			//UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *midpoint.ToString());
 
 			//if (GEngine)
@@ -114,16 +113,15 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 			//}
 		}
 		FTimerHandle DD;
-		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, midpoint);
+		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, midpoint, mergeCount);
 		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 0.5, false);
 
 
 	}
 
-
 }
 
-void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc)
+void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc, int CountNum)
 {
 	UE_LOG(LogTemp, Warning, TEXT("destroy flock"));
 	FActorSpawnParameters SpawnParams;
@@ -136,7 +134,11 @@ void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc)
 		member->Destroy();
 	}
 
-	AActor* TestBird = GetWorld()->SpawnActor<AActor>(BB, spawnloc, FRotator::ZeroRotator, SpawnParams);
+	ABigBird* TestBird = GetWorld()->SpawnActor<ABigBird>(BB, spawnloc, FRotator::ZeroRotator, SpawnParams);
+	if (IsValid(TestBird))
+	{
+		TestBird->ScaleBird(CountNum);
+	}
 	AllBirds.AddUnique(TestBird);
 
 	UE_LOG(LogTemp, Warning, TEXT("spawn big bird loc:%s"), *spawnloc.ToString());
@@ -153,10 +155,10 @@ void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc)
 void AFlockManager::CheckUnique(TArray<AActor*>RF)
 {
 	bool counter = false;
-	for (AActor* &bird : RF)
+	for (AActor* bird : RF)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Actor in the array : %s"), *bird->GetName());
-		if (GroupChecker.Contains(bird) && GroupChecker[bird] == false)
+		//UE_LOG(LogTemp, Warning, TEXT("Actor in the array : %s"), *bird->GetName());
+		if (IsValid(bird) && GroupChecker.Contains(bird) && GroupChecker[bird] == false)
 		{
 			GroupChecker[bird] = true;
 			counter = true;
@@ -177,7 +179,7 @@ void AFlockManager::tf()
 	{
 		for (AActor* birdie : AllBirds)
 		{
-			if (birdie != nullptr && !birdie->IsA(ABigBird::StaticClass()))
+			if (birdie != nullptr)
 			{
 				APawn* Recasted = Cast<APawn>(birdie);
 				ABird* Bir = Cast<ABird>(birdie);
@@ -275,22 +277,11 @@ void AFlockManager::BeginPlay()
 	Initialize();
 	pn = 0;
 
-	//FActorSpawnParameters SpawnParams;
-	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	//ABigBird* TestBird = GetWorld()->SpawnActor<ABigBird>(BB, GetActorLocation(), FRotator::ZeroRotator, SpawnParams);
-	//if (IsValid(TestBird->GetController()))
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("kms"));
-	//}
-	//ABirdController* R = Cast<ABirdController>(TestBird->GetController());
-	//R->Chasing();
-
 	FTimerHandle Testing;
 	GetWorld()->GetTimerManager().SetTimer(Testing, this, &AFlockManager::Temp, 4.0f, true);
 
 	FTimerHandle Update;
-	GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::StateUpdate, 1.0f,true); 
+	GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::tf, 1.0f,true); 
 }
 
 // Called every frame

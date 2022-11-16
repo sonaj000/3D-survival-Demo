@@ -18,10 +18,15 @@ ABird::ABird()
 	BirdMesh->SetupAttachment(RootComponent);
 
 	FlockPerimeter = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Component"));
-	FlockPerimeter->SetupAttachment(RootComponent);
+	FlockPerimeter->SetupAttachment(BirdMesh);
 
 	FlockPerimeter->OnComponentBeginOverlap.AddDynamic(this, &ABird::BeginOverLap);
 	FlockPerimeter->OnComponentEndOverlap.AddDynamic(this, &ABird::OnOverlapEnd);
+
+	//power level for each bird is level 1 default
+	MergeNum = 1;
+	Health = 10;
+	DamageNum = 5;
 }
 
 // Called when the game starts or when spawned
@@ -49,9 +54,10 @@ void ABird::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (Remote && !OtherActor->IsA(ABigBird::StaticClass()))
+	if (Remote && MergeNum <= 4 && OtherActor->IsA(ABird::StaticClass()))
 	{
-		if  (bcanDetect && Remote->bisFlocking && Remote->testarray.Num() <= 4) //do not add more birds if flock max is 4. add this bnack Remote->bisFlocking
+		ABird* temp = Cast<ABird>(OtherActor);
+		if  (bcanDetect && MergeNum + temp->MergeNum <= 4 && Remote->bisFlocking && Remote->testarray.Num() <= 4) //do not add more birds if flock max is 4. add this bnack Remote->bisFlocking
 		{
 			if (OtherActor != this  && !Remote->testarray.Contains(OtherActor)) //need to double check that big birds do not get added so they do not merge
 			{

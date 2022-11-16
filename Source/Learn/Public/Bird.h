@@ -29,6 +29,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
 		UStaticMeshComponent* BirdMesh;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "stats")
+		int MergeNum;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "stats")
+		int DamageNum;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "stats")
+		int Health;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -44,10 +53,10 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
-		void BeginOverLap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		virtual void BeginOverLap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+		virtual void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 };
 
 
