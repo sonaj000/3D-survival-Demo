@@ -281,7 +281,7 @@ void AFlockManager::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(Testing, this, &AFlockManager::Temp, 4.0f, true);
 
 	FTimerHandle Update;
-	GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::tf, 1.0f,true); 
+	GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::StateUpdate, 1.0f,true); 
 }
 
 // Called every frame
