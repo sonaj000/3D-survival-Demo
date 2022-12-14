@@ -25,6 +25,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	float TurnRateGamepad;
 
+	UFUNCTION()
+		void AttackStatUp();
+	UFUNCTION()
+		void AttackUpTimer();
+
+	UPROPERTY(VisibleAnywhere, Category = "stats")
+		int Attack;
+protected:
+
+
 protected:
 
 	/** Called for forwards/backward input */

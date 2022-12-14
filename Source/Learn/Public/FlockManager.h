@@ -12,7 +12,7 @@ class ABird;
 class ABigBird;
 
 UENUM()
-enum BirdState { IDLE,EVADE, CHASE, MERGE };
+enum BirdState { IDLE,EVADE, CHASE, MERGE, DESTROY };
 UENUM()
 enum BirdAction { ON_ENTER, ON_UPDATE };
 
@@ -54,6 +54,8 @@ public:
 
 	UFUNCTION()
 		void evadePhase();
+	UFUNCTION()
+		void DestroyPhase();
 	UFUNCTION()
 		void Temp();
 
@@ -97,6 +99,10 @@ private:
 	void Merge_Enter();
 	void Merge_Update();
 	void Merge_Exit();
+
+	void Destroy_Enter();
+	void Destroy_Update();
+	void Destroy_Exit();
 
 
 

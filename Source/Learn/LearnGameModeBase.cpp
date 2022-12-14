@@ -3,3 +3,7 @@
 
 #include "LearnGameModeBase.h"
 
+ALearnGameModeBase::ALearnGameModeBase()
+{
+	TotalScore = 100;
+}

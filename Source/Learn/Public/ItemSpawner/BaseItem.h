@@ -7,6 +7,7 @@
 #include "BaseItem.generated.h"
 
 class UBoxComponent;
+class ADispenserManager;
 
 UCLASS()
 class LEARN_API ABaseItem : public AActor
@@ -22,6 +23,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Mesh")
 		UBoxComponent* BoxComp; 
+	UPROPERTY()
+		AActor* DM;
 
 	UFUNCTION()
 		virtual void PowerUp(AActor* MCharacter);

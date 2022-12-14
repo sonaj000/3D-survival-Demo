@@ -49,6 +49,21 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	Attack = 5;
+}
+
+void ATP_ThirdPersonCharacter::AttackStatUp()
+{
+	Attack -= 5;
+	UE_LOG(LogTemp, Warning, TEXT("attack down"));
+}
+
+void ATP_ThirdPersonCharacter::AttackUpTimer()
+{
+	Attack += 5;
+	FTimerHandle ASU;
+	GetWorld()->GetTimerManager().SetTimer(ASU, this, &ATP_ThirdPersonCharacter::AttackStatUp, 5.0f, false);
 }
 
 //////////////////////////////////////////////////////////////////////////

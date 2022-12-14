@@ -81,6 +81,8 @@ public:
 
 	UFUNCTION()
 		void Flocking();
+	UFUNCTION()
+		void Destroying();
 
 	UPROPERTY()
 		bool bisChasing;
@@ -90,18 +92,24 @@ public:
 
 	UPROPERTY()
 		bool bisFlocking;
+	UPROPERTY()
+		bool bisDestroying;
 
 	UPROPERTY()
 		int flocknumber;
 
 	UPROPERTY(EditAnywhere, Category = "materials")
-		UMaterial* ChaseMat;
+		UMaterialInstance* ChaseMat;
 
 	UPROPERTY(EditAnywhere, Category = "materials")
-		UMaterial* EvadeMat;
+		UMaterialInstance* EvadeMat;
+	
+	UPROPERTY(EditAnywhere, Category = "materials")
+		UMaterialInstance* FlockMat;
 
 	UPROPERTY(EditAnywhere, Category = "materials")
-		UMaterial* FlockMat;
+		UMaterialInstance* DestroyMat;
+
 	UPROPERTY()
 		TArray<AActor*>testarray;
 

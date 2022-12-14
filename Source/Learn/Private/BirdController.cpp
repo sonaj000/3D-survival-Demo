@@ -12,6 +12,8 @@
 #include"BigBird.h"
 #include "UObject/WeakObjectPtrTemplates.h"
 #include "FlockManager.h"
+#include "ItemSpawner/DispenserManager.h"
+#include "ItemSpawner/BaseItem.h"
 
 ABirdController::ABirdController(const FObjectInitializer& ObjectInitializer)
 {
@@ -40,10 +42,9 @@ ABirdController::ABirdController(const FObjectInitializer& ObjectInitializer)
 	bisFlocking = false;
 	flocknumber = 0;
 
-	ChaseMat = CreateDefaultSubobject<UMaterial>(TEXT("Chase Materia"));
-	EvadeMat = CreateDefaultSubobject<UMaterial>(TEXT("Evade Material"));
-	FlockMat = CreateDefaultSubobject<UMaterial>(TEXT("Flock Material"));
-
+	ChaseMat = CreateDefaultSubobject<UMaterialInstance>(TEXT("Chase Materia"));
+	EvadeMat = CreateDefaultSubobject<UMaterialInstance>(TEXT("Evade Material"));
+	FlockMat = CreateDefaultSubobject<UMaterialInstance>(TEXT("Flock Material"));
 
 }
 
@@ -97,21 +98,24 @@ void ABirdController::Evading()
 	if (bSuccess)
 	{
 		RandomLoc = ResultLocation;
-	}
-	///FVector RandomLoc = NavArea->GetRandomReachablePointInRadius(this, NavArea->GetWorldBounds().GetCenter(), 2000.0f); // change the radius of the randomization
-	FVector PlayerLoc = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
-	/// <summary>
-	/// maybe make this a while loop instead of if. 
-	/// </summary>
-	if (FVector::Distance(RandomLoc, PlayerLoc) > 4000.0f)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
-		this->MoveToLocation(RandomLoc);
+		FVector PlayerLoc = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
+		if (FVector::Distance(RandomLoc, PlayerLoc) > 4000.0f)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
+			UE_LOG(LogTemp, Warning, TEXT("Random Loc: %s "), *RandomLoc.ToString());
+			this->MoveToLocation(RandomLoc);
+		}
+		else
+		{
+			Evading();
+		}
 	}
 	else
 	{
-		Evading();
+		UE_LOG(LogTemp, Warning, TEXT("no valid point found"));
 	}
+	///FVector RandomLoc = NavArea->GetRandomReachablePointInRadius(this, NavArea->GetWorldBounds().GetCenter(), 2000.0f); // change the radius of the randomization
+
 }
 
 void ABirdController::Flocking()
@@ -176,6 +180,27 @@ void ABirdController::Flocking()
 
 }
 
+void ABirdController::Destroying()
+{
+	StateChange(4);
+	ADispenserManager*Man = Cast<ADispenserManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ADispenserManager::StaticClass()));
+	ABaseItem* ho = nullptr;
+
+	if (!Man->Items.IsEmpty())
+	{
+		Man->Items.Peek(ho);
+		if (ho != nullptr)
+		{
+			MoveToLocation(ho->GetActorLocation());
+		}
+	}
+	else
+	{
+		Evading();
+	}
+
+}
+
 void ABirdController::StateChange(int statenum)
 { // changing the boolean but also the mesh of the box to indicae which state it is in 
 
@@ -196,6 +221,7 @@ void ABirdController::StateChange(int statenum)
 			bisChasing = true;
 			bisEvading = false;
 			bisFlocking = false;
+			bisDestroying = false;
 			T->SetMaterial(0, ChaseMat); // set material here. might make this a seperate function
 			break;
 
@@ -203,6 +229,7 @@ void ABirdController::StateChange(int statenum)
 			bisChasing = false;
 			bisEvading = true;
 			bisFlocking = false;
+			bisDestroying;
 			T->SetMaterial(0, EvadeMat);
 			break;
 
@@ -210,7 +237,15 @@ void ABirdController::StateChange(int statenum)
 			bisChasing = false;
 			bisEvading = false;
 			bisFlocking = true;
+			bisDestroying = false;
 			T->SetMaterial(0, FlockMat);
+			break;
+		case 4:
+			bisChasing = false;
+			bisEvading = false;
+			bisFlocking = false;
+			bisDestroying = true;
+			T->SetMaterial(0, DestroyMat);
 			break;
 		}
 	}

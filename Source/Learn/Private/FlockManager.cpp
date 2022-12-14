@@ -262,9 +262,28 @@ void AFlockManager::evadePhase()
 	}
 }
 
+void AFlockManager::DestroyPhase()
+{
+	if (AllBirds.Num() > 0)
+	{
+		for (AActor* birdie : AllBirds)
+		{
+			if (birdie->IsA(ABird::StaticClass()))
+			{
+				APawn* Recasted = CastChecked<APawn>(birdie);
+				ABird* Bir = Cast<ABird>(birdie);
+				ABirdController* R = Cast<ABirdController>(Recasted->GetController());
+				//Bir->bcanDetect = true; ???maybe need. 
+				R->Destroying();
+				UE_LOG(LogTemp, Warning, TEXT("birds are evading"));
+			}
+		}
+	}
+}
+
 void AFlockManager::Temp()
 {
-	pn = FMath::RandRange(0, 2);
+	pn = FMath::RandRange(0, 3);
 	UE_LOG(LogTemp, Warning, TEXT("random number generator"));
 }
 
@@ -281,7 +300,8 @@ void AFlockManager::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(Testing, this, &AFlockManager::Temp, 4.0f, true);
 
 	FTimerHandle Update;
-	GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::StateUpdate, 1.0f,true); 
+	GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::DestroyPhase, 1.0f,true); 
+
 }
 
 // Called every frame
@@ -330,6 +350,18 @@ void AFlockManager::StateUpdate()
 		}
 
 	}
+	else if (CurrentState == BirdState::DESTROY)
+	{
+		if (CurrentAction == BirdAction::ON_ENTER)
+		{
+			Destroy_Enter();
+		}
+		if (CurrentAction == BirdAction::ON_UPDATE)
+		{
+			Destroy_Update();
+		}
+
+	}
 
 }
 
@@ -342,6 +374,8 @@ void AFlockManager::SetBossState(BirdState newState)
 	case BirdState::CHASE:
 		break;
 	case BirdState::MERGE:
+		break;
+	case BirdState::DESTROY:
 		break;
 	default:
 		UE_LOG(LogTemp, Warning, TEXT("no state implemented"), newState)
@@ -378,6 +412,10 @@ void AFlockManager::Idle_Exit()
 	{
 		SetBossState(BirdState::MERGE);
 	}
+	if (pn == 3)
+	{
+		SetBossState(BirdState::DESTROY);
+	}
 
 }
 
@@ -407,6 +445,10 @@ void AFlockManager::Chase_Exit()
 	{
 		SetBossState(BirdState::MERGE);
 	}
+	if (pn == 3)
+	{
+		SetBossState(BirdState::DESTROY);
+	}
 }
 
 void AFlockManager::Merge_Enter()
@@ -434,5 +476,39 @@ void AFlockManager::Merge_Exit()
 	if (pn == 1)
 	{
 		SetBossState(BirdState::CHASE);
+	}
+	if (pn == 3)
+	{
+		SetBossState(BirdState::DESTROY);
+	}
+}
+
+void AFlockManager::Destroy_Enter()
+{
+	CurrentAction = BirdAction::ON_UPDATE;
+}
+
+void AFlockManager::Destroy_Update()
+{
+	DestroyPhase();
+	if (pn != 3)
+	{
+		Destroy_Exit();
+	}
+}
+
+void AFlockManager::Destroy_Exit()
+{
+	if (pn == 0)
+	{
+		SetBossState(BirdState::IDLE);
+	}
+	if (pn == 1)
+	{
+		SetBossState(BirdState::CHASE);
+	}
+	if (pn == 2)
+	{
+		SetBossState(BirdState::MERGE);
 	}
 }

@@ -13,5 +13,14 @@ UCLASS()
 class LEARN_API ALearnGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	ALearnGameModeBase();
+
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Score")
+		int TotalScore;
+
 	
 };

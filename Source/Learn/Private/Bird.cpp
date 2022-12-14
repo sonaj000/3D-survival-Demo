@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "BirdController.h"
 #include "Kismet/GameplayStatics.h"
+#include "MCharacter.h"
 #include "BigBird.h"
 
 // Sets default values
@@ -67,6 +68,12 @@ void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 			}
 		}
 	}
+	if (OtherActor != this && OtherActor->IsA(AMCharacter::StaticClass()))
+	{
+		AMCharacter* target = Cast<AMCharacter>(OtherActor);
+		target->Health -= 5;
+		UE_LOG(LogTemp, Warning, TEXT("target bnit"));
+	}
 
 }
 
@@ -78,6 +85,7 @@ void ABird::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 		{
 			bcanDetect = true;
 			UE_LOG(LogTemp, Warning, TEXT("bcandetect reset"));
+
 		}
 	}
 }

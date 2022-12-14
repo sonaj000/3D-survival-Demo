@@ -4,6 +4,9 @@
 #include "ItemSpawner/BaseItem.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
+#include "MCharacter.h"
+#include "ItemSpawner/DispenserManager.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABaseItem::ABaseItem()
@@ -16,17 +19,20 @@ ABaseItem::ABaseItem()
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Comp"));
 	BoxComp->SetupAttachment(RootComponent);
 
+	BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ABaseItem::BeginOverLap);
+
 }
 
 void ABaseItem::PowerUp(AActor* MCharacter)
 {
-
+	Destroy();
 }
 
 // Called when the game starts or when spawned
 void ABaseItem::BeginPlay()
 {
 	Super::BeginPlay();
+	DM = UGameplayStatics::GetActorOfClass(GetWorld(), ADispenserManager::StaticClass());
 	
 }
 
@@ -40,10 +46,21 @@ void ABaseItem::Tick(float DeltaTime)
 void ABaseItem::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	//since both birds and characters can destory items, check if the other actor is a character first. 
-	if (OtherActor != this && OtherActor->IsA(ACharacter::StaticClass()))
+	if (IsValid(OtherActor) && OtherActor != this && OtherActor->IsA(AMCharacter::StaticClass())) //&& OtherActor->IsA(ACharacter::StaticClass())
 	{
-		//if it is a bird Destroy();
-		//if character call seperate function 
+		UE_LOG(LogTemp, Warning, TEXT("destroy"));
+		ADispenserManager* Site = Cast<ADispenserManager>(DM);
+		ABaseItem* tail;
+		Site->Items.Dequeue(tail);
+		PowerUp(OtherActor);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("destroy"));
+		ADispenserManager* Site = Cast<ADispenserManager>(DM);
+		ABaseItem* tail;
+		Site->Items.Dequeue(tail);
+		Destroy();
 	}
 }
 
