@@ -11,6 +11,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
+#include "HealthComponent.h"
 
 // Sets default values
 AMCharacter::AMCharacter()
@@ -43,8 +44,10 @@ AMCharacter::AMCharacter()
 	CameraComp->SetupAttachment(SpringArm, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	CameraComp->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	HealthBar = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Bar"));
+	HealthBar->OnHealthChanged.AddDynamic(this, &AMCharacter::OnHealthChanged);
+
 	Attack = 5;
-	Health = 100;
 }
 
 void AMCharacter::AttackStatUp()
@@ -62,7 +65,23 @@ void AMCharacter::AttackUpTimer()
 
 void AMCharacter::HealthRestore()
 {
-	Health = 100;
+	HealthBar->Health = 100;
+}
+
+void AMCharacter::OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (Health <= 0.0f)
+	{
+		GetMovementComponent()->StopMovementImmediately();
+		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		//DetachFromControllerPendingDestroy();
+
+		//SetLifeSpan(5.0f);
+		//UGameplayStatics::OpenLevel(this, FName("Menu_Map"), false);
+		//change this to death scene later
+
+	}
 }
 
 // Called when the game starts or when spawned
@@ -70,6 +89,7 @@ void AMCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Score = 0;
+	HealthBar->Health = 100;
 	
 }
 

@@ -21,7 +21,8 @@ void ADispenserManager::BeginPlay()
 	Super::BeginPlay();
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADispenser::StaticClass(), AllSites); // fill up array for all actors
 	FTimerHandle ReSpawn;
-	GetWorld()->GetTimerManager().SetTimer(ReSpawn, this, &ADispenserManager::ItemCall, 10.0f, true);
+	ItemCall();
+	//GetWorld()->GetTimerManager().SetTimer(ReSpawn, this, &ADispenserManager::ItemCall, 5.0f, true);
 
 }
 

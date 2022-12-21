@@ -9,7 +9,7 @@
 
 class UBoxComponent;
 class ABirdController;
-
+class UDamageType;
 
 UCLASS()
 class LEARN_API ABird : public ACharacter
@@ -25,6 +25,11 @@ public:
 
 	UPROPERTY()
 		bool bcanDetect;
+	UPROPERTY()
+		bool bcanDamage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+		TSubclassOf<UDamageType>DA;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
 		UStaticMeshComponent* BirdMesh;
@@ -34,9 +39,14 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "stats")
 		int DamageNum;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "stats")
-		int Health;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+		UHealthComponent* BirdBar;
+
+	UFUNCTION()
+		void OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+
 	
 protected:
 	// Called when the game starts or when spawned

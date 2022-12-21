@@ -67,7 +67,6 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 			}
 			mergeCount += bd->MergeNum;
 		}
-
 		FTimerHandle DD;
 		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, rm, mergeCount);
 		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
@@ -300,7 +299,7 @@ void AFlockManager::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(Testing, this, &AFlockManager::Temp, 4.0f, true);
 
 	FTimerHandle Update;
-	GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::DestroyPhase, 1.0f,true); 
+	GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::StateUpdate, 1.0f,true); 
 
 }
 

@@ -7,7 +7,10 @@
 #include "BirdController.h"
 #include "Kismet/GameplayStatics.h"
 #include "MCharacter.h"
+#include "GameFramework/DamageType.h"
+#include "FlockManager.h"
 #include "BigBird.h"
+#include "HealthComponent.h"
 
 // Sets default values
 ABird::ABird()
@@ -24,10 +27,23 @@ ABird::ABird()
 	FlockPerimeter->OnComponentBeginOverlap.AddDynamic(this, &ABird::BeginOverLap);
 	FlockPerimeter->OnComponentEndOverlap.AddDynamic(this, &ABird::OnOverlapEnd);
 
+	BirdBar = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Bar"));
+
 	//power level for each bird is level 1 default
 	MergeNum = 1;
-	Health = 10;
+	BirdBar->Health = 10;
 	DamageNum = 5;
+}
+
+void ABird::OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (Health <= 0.0f)
+	{
+		AFlockManager* Manager = Cast<AFlockManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AFlockManager::StaticClass()));
+		Manager->AllBirds.Remove(this);
+		this->GetController()->Destroy();
+		Destroy();
+	}
 }
 
 // Called when the game starts or when spawned
@@ -36,6 +52,8 @@ void ABird::BeginPlay()
 	Super::BeginPlay();
 	Remote = Cast<ABirdController>(this->GetController());
 	bcanDetect = true;
+	bcanDamage = true;
+	BirdBar->Health = 10;
 	
 }
 
@@ -55,6 +73,17 @@ void ABird::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (bcanDamage && OtherActor != this && OtherActor->IsA(AMCharacter::StaticClass()))
+	{
+		AMCharacter* target = Cast<AMCharacter>(OtherActor);
+		int damagetaken = target->Attack;
+		UGameplayStatics::ApplyDamage(target, DamageNum, GetInstigatorController(), this, DA);
+		UGameplayStatics::ApplyDamage(this, damagetaken, target->GetInstigatorController(), this, DA);
+		UE_LOG(LogTemp, Warning, TEXT("actor added :%d"), BirdBar->Health);
+
+		//UE_LOG(LogTemp, Warning, TEXT("target health is :%d"));
+		bcanDamage = false;
+	}
 	if (Remote && MergeNum <= 4 && OtherActor->IsA(ABird::StaticClass()))
 	{
 		ABird* temp = Cast<ABird>(OtherActor);
@@ -67,12 +96,6 @@ void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 				bcanDetect = false;
 			}
 		}
-	}
-	if (OtherActor != this && OtherActor->IsA(AMCharacter::StaticClass()))
-	{
-		AMCharacter* target = Cast<AMCharacter>(OtherActor);
-		target->Health -= 5;
-		UE_LOG(LogTemp, Warning, TEXT("target bnit"));
 	}
 
 }
@@ -87,6 +110,10 @@ void ABird::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 			UE_LOG(LogTemp, Warning, TEXT("bcandetect reset"));
 
 		}
+	}
+	if (!bcanDamage)
+	{
+		bcanDamage = true;
 	}
 }
 

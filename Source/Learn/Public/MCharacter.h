@@ -9,6 +9,7 @@
 class UCameraComponent;
 class USpringArmComponent;
 class UAudioComponent;
+class UHealthComponent;
 
 UCLASS()
 class LEARN_API AMCharacter : public ACharacter
@@ -34,13 +35,16 @@ public:
 		void AttackUpTimer();
 	UPROPERTY(VisibleAnywhere, Category = "stats")
 		int Attack;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Stats")
-		int Health;
 	UFUNCTION()
 	void HealthRestore();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ho")
 		int Score;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+		UHealthComponent* HealthBar;
+	UFUNCTION()
+		void OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 
 protected:

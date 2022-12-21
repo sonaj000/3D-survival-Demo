@@ -4,6 +4,7 @@
 #include "BigBird.h"
 #include "BirdController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "HealthComponent.h"
 
 void ABigBird::ScaleBird(int MNum)
 {
@@ -18,7 +19,7 @@ void ABigBird::ScaleBird(int MNum)
 		{
 		case 2:
 			MergeNum = 2;
-			Health = 15;
+			BirdBar->Health = 15;
 			DamageNum = 10;
 			sm->SetWorldScale3D(FVector(rescale,rescale,rescale));
 			sm->SetRelativeScale3D(FVector(rescale, rescale, rescale));
@@ -29,7 +30,7 @@ void ABigBird::ScaleBird(int MNum)
 
 		case 3:
 			MergeNum = 3;
-			Health = 20;
+			BirdBar->Health = 20;
 			DamageNum = 15;
 			sm->SetWorldScale3D(FVector(rescale, rescale, rescale));
 			sm->SetRelativeScale3D(FVector(rescale, rescale, rescale));
@@ -40,7 +41,7 @@ void ABigBird::ScaleBird(int MNum)
 
 		case 4:
 			MergeNum = 4;
-			Health = 25;
+			BirdBar->Health = 25;
 			DamageNum = 20;
 			sm->SetWorldScale3D(FVector(rescale, rescale, rescale));
 			sm->SetRelativeScale3D(FVector(rescale, rescale, rescale));

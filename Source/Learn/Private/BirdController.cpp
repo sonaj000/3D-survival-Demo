@@ -60,7 +60,7 @@ void ABirdController::BeginPlay()
 
 	Manager = Cast<AFlockManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AFlockManager::StaticClass()));
 
-	UE_LOG(LogTemp, Warning, TEXT("managert name is :%s"), *Manager->GetName())
+	//UE_LOG(LogTemp, Warning, TEXT("managert name is :%s"), *Manager->GetName())
 }
 
 void ABirdController::OnPossess(APawn* cPawn)
@@ -74,13 +74,13 @@ void ABirdController::Chasing()
 	//need to change movement speed in state change
 	try
 	{
-		UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
+		//UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
 		//this->MoveToActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));//swap this out for actor location
 		this->MoveToLocation(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation());
 	}
 	catch (const std::exception&)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("no work"));
+		//UE_LOG(LogTemp, Warning, TEXT("no work"));
 	}
 	
 
@@ -90,7 +90,7 @@ void ABirdController::Evading()
 {
 	/* select a random location on the navmesh, double check it's distance from the player is greater than x distance and if not repick a location*/
 	StateChange(2);
-	UE_LOG(LogTemp, Warning, TEXT("Evading"));
+	//UE_LOG(LogTemp, Warning, TEXT("Evading"));
 	UNavigationSystemV1* NavArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	FVector RandomLoc = FVector(0, 0, 0);
 	FNavLocation ResultLocation;
@@ -101,8 +101,7 @@ void ABirdController::Evading()
 		FVector PlayerLoc = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
 		if (FVector::Distance(RandomLoc, PlayerLoc) > 4000.0f)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
-			UE_LOG(LogTemp, Warning, TEXT("Random Loc: %s "), *RandomLoc.ToString());
+			//UE_LOG(LogTemp, Warning, TEXT("Random Loc: %s "), *RandomLoc.ToString());
 			this->MoveToLocation(RandomLoc);
 		}
 		else
