@@ -62,6 +62,8 @@ public:
 	UPROPERTY()
 		int pn;
 
+	UPROPERTY()
+		TMap<AActor*, bool> GroupChecker;
 
 protected:
 	// Called when the game starts or when spawned
@@ -71,9 +73,6 @@ protected:
 		TSubclassOf<ABird> MyActorClass = ABird::StaticClass();
 
 	TArray<TArray<AActor*>>Cool;
-
-	UPROPERTY()
-		TMap<AActor*, bool> GroupChecker;
 
 private:
 	UPROPERTY()

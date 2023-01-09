@@ -65,13 +65,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 		AActor* Holder;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Flocking")
-		AFlockManager* Manager;
-
 public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Flocking")
+		AFlockManager* Manager;
 
 	UFUNCTION()
 		void Chasing();

@@ -9,6 +9,9 @@
 /**
  * 
  */
+
+class APoints;
+
 UCLASS()
 class LEARN_API ALearnGameModeBase : public AGameModeBase
 {
@@ -21,6 +24,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Score")
 		int TotalScore;
+
+	UPROPERTY(EditAnywhere, Category = "Spawn")
+		TSubclassOf<APoints>PointItem;
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+		void SpawnPoint();
 
 	
 };

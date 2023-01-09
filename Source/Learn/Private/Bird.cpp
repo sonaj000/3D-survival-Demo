@@ -28,20 +28,24 @@ ABird::ABird()
 	FlockPerimeter->OnComponentEndOverlap.AddDynamic(this, &ABird::OnOverlapEnd);
 
 	BirdBar = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Bar"));
+	BirdBar->OnHealthChanged.AddDynamic(this, &ABird::OnHealthChanged);
 
 	//power level for each bird is level 1 default
-	MergeNum = 1;
 	BirdBar->Health = 10;
+	BirdBar->DefaultHealth = 10;
+	MergeNum = 1;
 	DamageNum = 5;
 }
 
 void ABird::OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
+	//UE_LOG(LogTemp, Warning, TEXT("bird health is down"));
 	if (Health <= 0.0f)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("health is :%d"), BirdBar->Health);
 		AFlockManager* Manager = Cast<AFlockManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AFlockManager::StaticClass()));
 		Manager->AllBirds.Remove(this);
-		this->GetController()->Destroy();
+		Manager->GroupChecker.Remove(this);
 		Destroy();
 	}
 }
@@ -54,6 +58,7 @@ void ABird::BeginPlay()
 	bcanDetect = true;
 	bcanDamage = true;
 	BirdBar->Health = 10;
+	//UE_LOG(LogTemp, Warning, TEXT("birdhealth bar og is:%f"), BirdBar->Health);
 	
 }
 
@@ -79,9 +84,8 @@ void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 		int damagetaken = target->Attack;
 		UGameplayStatics::ApplyDamage(target, DamageNum, GetInstigatorController(), this, DA);
 		UGameplayStatics::ApplyDamage(this, damagetaken, target->GetInstigatorController(), this, DA);
-		UE_LOG(LogTemp, Warning, TEXT("actor added :%d"), BirdBar->Health);
+		//UE_LOG(LogTemp, Warning, TEXT("actor added :%f"), BirdBar->Health);
 
-		//UE_LOG(LogTemp, Warning, TEXT("target health is :%d"));
 		bcanDamage = false;
 	}
 	if (Remote && MergeNum <= 4 && OtherActor->IsA(ABird::StaticClass()))

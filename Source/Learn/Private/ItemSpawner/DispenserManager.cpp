@@ -22,7 +22,7 @@ void ADispenserManager::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADispenser::StaticClass(), AllSites); // fill up array for all actors
 	FTimerHandle ReSpawn;
 	ItemCall();
-	//GetWorld()->GetTimerManager().SetTimer(ReSpawn, this, &ADispenserManager::ItemCall, 5.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(ReSpawn, this, &ADispenserManager::ItemCall, 15.0f, true);
 
 }
 
@@ -33,7 +33,7 @@ void ADispenserManager::ItemCall()
 	{
 		ADispenser* Site = Cast<ADispenser>(AllSites[i]);
 		Site->ItemSpawner();
-		UE_LOG(LogTemp, Warning, TEXT("sites are spawning"));
+		//UE_LOG(LogTemp, Warning, TEXT("sites are spawning"));
 		if (IsValid(Site->HolderItem))
 		{
 			Items.Enqueue(Site->HolderItem);

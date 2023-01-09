@@ -70,6 +70,7 @@ void AMCharacter::HealthRestore()
 
 void AMCharacter::OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
+	UE_LOG(LogTemp, Warning, TEXT("character health changed"));
 	if (Health <= 0.0f)
 	{
 		GetMovementComponent()->StopMovementImmediately();
@@ -78,7 +79,7 @@ void AMCharacter::OnHealthChanged(UHealthComponent* OwningHealthComp, float Heal
 		//DetachFromControllerPendingDestroy();
 
 		//SetLifeSpan(5.0f);
-		//UGameplayStatics::OpenLevel(this, FName("Menu_Map"), false);
+		UGameplayStatics::OpenLevel(this, FName("NewMap"), false);
 		//change this to death scene later
 
 	}

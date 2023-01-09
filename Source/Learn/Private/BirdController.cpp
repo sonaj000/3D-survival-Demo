@@ -72,17 +72,11 @@ void ABirdController::Chasing()
 {
 	StateChange(1);
 	//need to change movement speed in state change
-	try
-	{
+
 		//UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
 		//this->MoveToActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));//swap this out for actor location
-		this->MoveToLocation(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation());
-	}
-	catch (const std::exception&)
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("no work"));
-	}
-	
+	this->MoveToLocation(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation());
+
 
 }
 
@@ -120,7 +114,7 @@ void ABirdController::Evading()
 void ABirdController::Flocking()
 {
 	StateChange(3);
-	if (testarray.Num() > 1 && (Cast<ABird>(GetPawn())->MergeNum) < 4) //change this to include all birds later. 
+	if (testarray.Num() > 1 && (Cast<ABird>(GetPawn())->MergeNum) < 4 && testarray.Num() < 5) //change this to include all birds later. 
 	{
 		//Manager->MergeFlock(testarray);
 		Manager->CheckUnique(testarray);
@@ -129,6 +123,16 @@ void ABirdController::Flocking()
 	}
 	else
 	{
+		//try
+		//{
+		//	//UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
+		//	//this->MoveToActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));//swap this out for actor location
+		//	this->MoveToLocation(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation());
+		//}
+		//catch (const std::exception&)
+		//{
+		//	//UE_LOG(LogTemp, Warning, TEXT("no work"));
+		//}
 		UNavigationSystemV1* NavArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 		FVector RandomLoc = FVector(0, 0, 0);
 		FNavLocation ResultLocation;
@@ -195,7 +199,7 @@ void ABirdController::Destroying()
 	}
 	else
 	{
-		Evading();
+		Chasing();
 	}
 
 }

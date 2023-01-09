@@ -36,20 +36,19 @@ void ADispenser::ItemSpawner()
 	FVector SpawnPoint = ReferencePoint->GetComponentTransform().GetLocation();
 
 	int itemID = FMath::RandRange(0, 1);
-	UE_LOG(LogTemp, Warning, TEXT("int"));
 
 	switch (itemID)
 	{
 		case 0:
 			HolderItem = GetWorld()->SpawnActor<AAttackUp>(AttackItem, this->GetActorLocation() + FVector(0, 0, -400), FRotator::ZeroRotator, SpawnParams);
-			UE_LOG(LogTemp, Warning, TEXT("attack"));
+			//UE_LOG(LogTemp, Warning, TEXT("attack"));
 			break;
 		case 1:
 			HolderItem = GetWorld()->SpawnActor<AHealthUp>(HealthItem, this->GetActorLocation() + FVector(0,0,-400), FRotator::ZeroRotator, SpawnParams);
-			UE_LOG(LogTemp, Warning, TEXT("health"));
+			//UE_LOG(LogTemp, Warning, TEXT("health"));
 			break;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("finished"));
+	//UE_LOG(LogTemp, Warning, TEXT("finished"));
 
 }
 

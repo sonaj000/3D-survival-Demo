@@ -4,6 +4,7 @@
 #include "ItemSpawner/BaseItem.h"
 #include "GameFramework/Character.h"
 #include "Components/BoxComponent.h"
+#include "Bird.h"
 #include "MCharacter.h"
 #include "ItemSpawner/DispenserManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -48,19 +49,23 @@ void ABaseItem::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	//since both birds and characters can destory items, check if the other actor is a character first. 
 	if (IsValid(OtherActor) && OtherActor != this && OtherActor->IsA(AMCharacter::StaticClass())) //&& OtherActor->IsA(ACharacter::StaticClass())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("destroy"));
+		UE_LOG(LogTemp, Warning, TEXT("powerup overlap"));
 		ADispenserManager* Site = Cast<ADispenserManager>(DM);
 		ABaseItem* tail;
 		Site->Items.Dequeue(tail);
 		PowerUp(OtherActor);
 	}
-	else
+	else if (IsValid(OtherActor) && OtherActor != this && OtherActor->IsA(ABird::StaticClass()))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("destroy"));
 		ADispenserManager* Site = Cast<ADispenserManager>(DM);
 		ABaseItem* tail;
 		Site->Items.Dequeue(tail);
 		Destroy();
+	}
+	else
+	{
+		return;
 	}
 }
 
