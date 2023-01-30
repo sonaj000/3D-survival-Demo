@@ -16,7 +16,7 @@
 // Sets default values
 AMCharacter::AMCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Set size for collision capsule
@@ -68,6 +68,11 @@ void AMCharacter::HealthRestore()
 	HealthBar->Health = 100;
 }
 
+float AMCharacter::getHealth()
+{
+	return HealthBar->Health / HealthBar->DefaultHealth;
+}
+
 void AMCharacter::OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("character health changed"));
@@ -91,7 +96,7 @@ void AMCharacter::BeginPlay()
 	Super::BeginPlay();
 	Score = 0;
 	HealthBar->Health = 100;
-	
+
 }
 
 void AMCharacter::MoveForward(float Value)

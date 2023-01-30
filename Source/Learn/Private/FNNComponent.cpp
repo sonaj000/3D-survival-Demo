@@ -21,89 +21,58 @@ UFNNComponent::UFNNComponent()
 }
 void UFNNComponent::Initialize(int NumNodes, UFNNComponent* parent, UFNNComponent* child)
 {
-	NeuronValues = (double*)malloc(sizeof(double) * NumberofNodes);
-	DesiredValues = (double*)malloc(sizeof(double) * NumberofNodes);
-
-	Errors = (double*)malloc(sizeof(double) * NumberofNodes);
 
 	if (parent != NULL)
 	{
-		if (child != NULL)
-		{
-			ChildLayer = child;
-
-			Weights = (double**)malloc(sizeof(double*) * NumberofNodes);
-
-			WeightChanges = (double**)malloc(sizeof(double*) * NumberofNodes);
-
-			for (int i{ 0 }; i < NumberofNodes; i++)
-			{
-				Weights[i] = (double*)malloc(sizeof(double) * NumberofChildNodes);
-
-				WeightChanges[i] = (double*)malloc(sizeof(double) * NumberofChildNodes);
-			}
-
-			BiasValues = (double*)malloc(sizeof(double) * NumberofChildNodes);
-
-			BiasWeights = (double*)malloc(sizeof(double) * NumberofChildNodes);
-		}
-		else
-		{
-			Weights = NULL;
-			BiasValues = NULL;
-			BiasWeights = NULL;
-			WeightChanges = NULL;
-		}
-		//initialzing zeros for everything
-		for (int i{ 0 }; i < NumberofNodes; i++)
-		{
-			NeuronValues[i] = 0;
-			DesiredValues[i] = 0;
-			Errors[i] = 0;
-
-			if (ChildLayer != NULL)
-			{
-				for (int j{ 0 }; j < NumberofNodes; j++)
-				{
-					Weights[i][j] = 0;
-					WeightChanges[i][j] = 0;
-				}
-			}
-
-		}
-		//initialize the bias values and weights 
-		if (ChildLayer != NULL)
-		{
-			for (int j{ 0 }; j < NumberofChildNodes; j++)
-			{
-				BiasValues[j] = -1;
-				BiasWeights[j] = 0;
-
-			}
-		}
+		ParentLayer = parent;
 	}
+	if (child != NULL)
+	{
+		ChildLayer = child;
+
+	}
+
+	TestNeuronValues.Init(0, NumberofNodes);
+	TestDesiredValues.Init(0, NumberofNodes);
+	TestErrors.Init(0, NumberofNodes);
+
+	if (ChildLayer != NULL)
+	{
+		TArray<float>co;
+		co.Init(0, NumberofNodes);
+
+		UE_LOG(LogTemp, Warning, TEXT("size of ineer most weights: %d"), co.Num());
+		TestWeights.Init(co, NumberofNodes);
+
+		UE_LOG(LogTemp, Warning, TEXT("size of test weights: %d"), TestWeights.Num());
+		TestWeightsChanges.Init(co, NumberofNodes);
+
+		TestBiasValues.Init(-1, NumberofChildNodes);
+		TestBiasWeights.Init(0, NumberofChildNodes);
+	}
+
 }
 
 void UFNNComponent::CleanUp(void)
 {
-	free(NeuronValues);
-	free(DesiredValues);
-	free(Errors);
+	//free(NeuronValues);
+	//free(DesiredValues);
+	//free(Errors);
 
-	if (Weights != NULL)
-	{
-		for (int i{ 0 }; i < NumberofNodes; i++)
-		{
-			free(Weights[i]);
-			free(WeightChanges[i]);
-		}
+	//if (Weights != NULL)
+	//{
+	//	for (int i{ 0 }; i < NumberofNodes; i++)
+	//	{
+	//		free(Weights[i]);
+	//		free(WeightChanges[i]);
+	//	}
 
-		free(Weights);
-		free(WeightChanges);
+	//	free(Weights);
+	//	free(WeightChanges);
 
-	}
-	if (BiasValues != NULL) free(BiasValues);
-	if (BiasWeights != NULL) free(BiasWeights);
+	//}
+	//if (BiasValues != NULL) free(BiasValues);
+	//if (BiasWeights != NULL) free(BiasWeights);
 
 }
 
@@ -127,11 +96,11 @@ void UFNNComponent::RandomizeWeights()
 			{
 				number = min;
 			}
-			Weights[i][j] = number / 100.0f - 1;
+			TestWeights[i][j] = number / 100.0f - 1;
 		}
 	}
 
-	for (int j{ 0 }; j < NumberofNodes; j++)
+	for (int j{ 0 }; j < NumberofChildNodes; j++)
 	{
 		number = (((abs(rand()) % (max - min + 1)) + min));
 
@@ -144,7 +113,7 @@ void UFNNComponent::RandomizeWeights()
 			number = min;
 		}
 
-		BiasWeights[j] = number / 100.0f - 1;
+		TestBiasWeights[j] = number / 100.0f - 1;
 	}
 
 }
@@ -156,14 +125,14 @@ void UFNNComponent::CalculateErrors()
 	{
 		for (int i{ 0 }; i < NumberofNodes; i++)
 		{
-			Errors[i] = (DesiredValues[i] - NeuronValues[i]) * NeuronValues[i] * (1.0f - NeuronValues[i]);
+			TestErrors[i] = (TestDesiredValues[i] - TestNeuronValues[i]) * TestNeuronValues[i] * (1.0f - TestNeuronValues[i]);
 		}
 	}
 	else if (ParentLayer == NULL)
 	{
 		for (int i{ 0 }; i < NumberofNodes; i++)
 		{
-			Errors[i] = 0.0f;
+			TestErrors[i] = 0.0f;
 		}
 	}
 	else
@@ -173,9 +142,9 @@ void UFNNComponent::CalculateErrors()
 			sum = 0;
 			for (int j{ 0 }; j < NumberofChildNodes; j++)
 			{
-				sum += ChildLayer->Errors[j] * Weights[i][j];
+				sum += ChildLayer->TestErrors[j] * TestWeights[i][j];
 			}
-			Errors[i] = sum * NeuronValues[i] * (1.0f - NeuronValues[i]);
+			TestErrors[i] = sum * TestNeuronValues[i] * (1.0f - TestNeuronValues[i]);
 		}
 	}
 
@@ -189,23 +158,23 @@ void UFNNComponent::AdjustWeights()
 	{
 		for (int i{ 0 }; i < NumberofNodes; i++)
 		{
-			for (int j{ 0 }; j < NumberofNodes; j++)
+			for (int j{ 0 }; j < NumberofChildNodes; j++)
 			{
-				dw = LearningRate * ChildLayer->Errors[j] * NeuronValues[i];
+				dw = LearningRate * ChildLayer->TestErrors[j] * TestNeuronValues[i];
 				if (UseMomentum)
 				{
-					Weights[i][j] += dw + MomentumFactor * WeightChanges[i][j];
-					WeightChanges[i][j] += dw;
+					TestWeights[i][j] += dw + MomentumFactor * TestWeightsChanges[i][j];
+					TestWeightsChanges[i][j] += dw;
 				}
 				else
 				{
-					Weights[i][j] += dw;
+					TestWeights[i][j] += dw;
 				}
 			}
 		}
 		for (int j{ 0 }; j < NumberofChildNodes; j++)
 		{
-			BiasWeights[j] += LearningRate * ChildLayer->Errors[j] * BiasValues[j];
+			TestBiasWeights[j] += LearningRate * ChildLayer->TestErrors[j] * TestBiasValues[j];
 		}
 	}
 
@@ -221,17 +190,17 @@ void UFNNComponent::CalculateNeuronValues()
 			x = 0;
 			for (int i{ 0 }; i < NumberofParentNodes; i++)
 			{
-				x += ParentLayer->NeuronValues[i] * ParentLayer->Weights[i][j];
+				x += ParentLayer->TestNeuronValues[i] * ParentLayer->TestWeights[i][j];
 			}
-			x += ParentLayer->BiasValues[j] * ParentLayer->BiasWeights[j];
+			x += ParentLayer->TestBiasValues[j] * ParentLayer->TestBiasWeights[j];
 
 			if ((ChildLayer == NULL) && LinearOutput)
 			{
-				NeuronValues[j] = x;
+				TestNeuronValues[j] = x;
 			}
 			else
 			{
-				NeuronValues[j] = 1.0f / (1 + exp(-x));
+				TestNeuronValues[j] = 1.0f / (1 + exp(-x));
 			}
 		}
 	}
@@ -243,7 +212,7 @@ void UFNNComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+
 }
 
 

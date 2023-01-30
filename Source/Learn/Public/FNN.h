@@ -30,7 +30,7 @@ public:
 	UFUNCTION()
 		void CleanUp();
 	UFUNCTION()
-	void SetInput(int i, double value);
+		void SetInput(int i, double value);
 	UFUNCTION()
 		double GetOutput(int i);
 	UFUNCTION()
@@ -54,7 +54,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

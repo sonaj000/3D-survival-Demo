@@ -18,6 +18,7 @@ class LEARN_API ABird : public ACharacter
 
 public:
 	// Sets default values for this character's properties
+	// Sets default values for this character's properties
 	ABird();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
@@ -40,6 +41,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "stats")
 		int DamageNum;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ref")
+		float HealthRef;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ref")
+		float HealthDefRef;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 		UHealthComponent* BirdBar;
 
@@ -47,7 +54,7 @@ public:
 		void OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 
-	
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -55,7 +62,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 		ABirdController* Remote;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

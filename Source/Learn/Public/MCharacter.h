@@ -36,7 +36,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "stats")
 		int Attack;
 	UFUNCTION()
-	void HealthRestore();
+		void HealthRestore();
+
+	UFUNCTION()
+		float getHealth();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ho")
 		int Score;
@@ -57,7 +60,7 @@ protected:
 	/** Called for side to side input */
 	void MoveRight(float Value);
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

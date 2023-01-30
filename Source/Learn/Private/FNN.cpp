@@ -7,8 +7,13 @@
 // Sets default values
 AFNN::AFNN()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+
+	InputLayer = CreateDefaultSubobject<UFNNComponent>(TEXT("Input Layer"));
+	HiddenLayer = CreateDefaultSubobject<UFNNComponent>(TEXT("Hidden Layer"));
+	OutputLayer = CreateDefaultSubobject<UFNNComponent>(TEXT("Output Layer"));
 
 }
 
@@ -16,7 +21,7 @@ AFNN::AFNN()
 void AFNN::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -38,6 +43,8 @@ void AFNN::Initialize(int nNodesInput, int nNodesHidden, int nNodesOutput)
 	HiddenLayer->NumberofChildNodes = nNodesOutput;
 	HiddenLayer->NumberofParentNodes = nNodesInput;
 	HiddenLayer->Initialize(nNodesHidden, InputLayer, OutputLayer);
+	UE_LOG(LogTemp, Warning, TEXT("hidden layer test weights:  %d"), HiddenLayer->TestWeights.Num());
+	UE_LOG(LogTemp, Warning, TEXT("here is weights index test : %f"), HiddenLayer->TestWeights[1][0]);
 	HiddenLayer->RandomizeWeights();
 
 	OutputLayer->NumberofNodes = nNodesOutput;
@@ -58,7 +65,7 @@ void AFNN::SetInput(int i, double value)
 {
 	if ((i >= 0) && (i < InputLayer->NumberofNodes))
 	{
-		InputLayer->NeuronValues[i] = value;
+		InputLayer->TestNeuronValues[i] = value;
 	}
 }
 
@@ -66,7 +73,7 @@ double AFNN::GetOutput(int i)
 {
 	if ((i >= 0) && (i < OutputLayer->NumberofNodes))
 	{
-		return OutputLayer->NeuronValues[i];
+		return OutputLayer->TestNeuronValues[i];
 	}
 
 	return (double)INT_MAX;
@@ -76,7 +83,7 @@ void AFNN::SetDesiredOutput(int i, double value)
 {
 	if ((i >= 0) && (i < OutputLayer->NumberofNodes))
 	{
-		OutputLayer->DesiredValues[i] = value;
+		OutputLayer->TestDesiredValues[i] = value;
 	}
 }
 
@@ -102,14 +109,14 @@ int AFNN::GetMaxOutputID()
 	int i, id;
 	double maxval;
 
-	maxval = OutputLayer->NeuronValues[0];
+	maxval = OutputLayer->TestNeuronValues[0];
 	id = 0;
 
 	for (i = 1; i < OutputLayer->NumberofNodes; i++)
 	{
-		if (OutputLayer->NeuronValues[i] > maxval)
+		if (OutputLayer->TestNeuronValues[i] > maxval)
 		{
-			maxval = OutputLayer->NeuronValues[i];
+			maxval = OutputLayer->TestNeuronValues[i];
 			id = i;
 		}
 	}
@@ -121,9 +128,9 @@ double AFNN::CalculateError()
 	int i;
 	double error = 0;
 
-	for (i = 0; i, OutputLayer->NumberofNodes; i++)
+	for (i = 0; i < OutputLayer->NumberofNodes; i++)
 	{
-		error += pow(OutputLayer->NeuronValues[i] - OutputLayer->DesiredValues[i], 2);
+		error += pow(OutputLayer->TestNeuronValues[i] - OutputLayer->TestDesiredValues[i], 2);
 
 	}
 
@@ -157,6 +164,5 @@ void AFNN::SetMomentum(bool useMomentum, double factor)
 	HiddenLayer->MomentumFactor = factor;
 	OutputLayer->MomentumFactor = factor;
 }
-
 
 

@@ -10,9 +10,11 @@
 
 class ABird;
 class ABigBird;
+class AFNN;
+class AMCharacter;
 
 UENUM()
-enum BirdState { IDLE,EVADE, CHASE, MERGE, DESTROY };
+enum BirdState { IDLE, EVADE, CHASE, MERGE, DESTROY };
 UENUM()
 enum BirdAction { ON_ENTER, ON_UPDATE };
 
@@ -20,15 +22,15 @@ UCLASS()
 class LEARN_API AFlockManager : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AFlockManager();
 
 	TArray<AActor*>AllBirds;
 
 	UPROPERTY(VisibleAnywhere, Category = "Merge")
-	TSubclassOf<ABigBird>NewBB;
+		TSubclassOf<ABigBird>NewBB;
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "bigbird")
@@ -44,10 +46,10 @@ public:
 		void DestroyFlock(TArray<AActor*>NewFlock, FVector spawnloc, int CountNum);
 
 
-		void CheckUnique(TArray<AActor*>RF);
+	void CheckUnique(TArray<AActor*>RF);
 
 	UFUNCTION()
-		void tf(); 
+		void tf();
 
 	UFUNCTION()
 		void chasePhase();
@@ -65,6 +67,8 @@ public:
 	UPROPERTY()
 		TMap<AActor*, bool> GroupChecker;
 
+	TArray<TArray<float>>TrainingSet;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -73,6 +77,28 @@ protected:
 		TSubclassOf<ABird> MyActorClass = ABird::StaticClass();
 
 	TArray<TArray<AActor*>>Cool;
+
+
+	void ImportData();
+
+	UFUNCTION()
+		void StartData();
+
+	UFUNCTION()
+		void Retrain(float evade, float chase, float merge, float DDay);
+
+	UFUNCTION()
+		void random();
+
+	UFUNCTION()
+		void newCommand();
+
+	UPROPERTY()
+		AMCharacter* Mainchar;
+
+	UPROPERTY(EditAnywhere, Category = "Brain")
+		/*TSubclassOf<AFNN>NeuralNetwork; */
+		AFNN* NeuralNetwork;
 
 private:
 	UPROPERTY()
@@ -105,7 +131,7 @@ private:
 
 
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

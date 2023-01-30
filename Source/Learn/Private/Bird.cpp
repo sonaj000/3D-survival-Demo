@@ -15,7 +15,7 @@
 // Sets default values
 ABird::ABird()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	BirdMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("cool"));
@@ -35,11 +35,14 @@ ABird::ABird()
 	BirdBar->DefaultHealth = 10;
 	MergeNum = 1;
 	DamageNum = 5;
+	HealthRef = BirdBar->Health;
+	HealthDefRef = BirdBar->DefaultHealth;
 }
 
 void ABird::OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("bird health is down"));
+	HealthRef = Health;
 	if (Health <= 0.0f)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("health is :%d"), BirdBar->Health);
@@ -59,7 +62,7 @@ void ABird::BeginPlay()
 	bcanDamage = true;
 	BirdBar->Health = 10;
 	//UE_LOG(LogTemp, Warning, TEXT("birdhealth bar og is:%f"), BirdBar->Health);
-	
+
 }
 
 // Called every frame
@@ -91,9 +94,9 @@ void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 	if (Remote && MergeNum <= 4 && OtherActor->IsA(ABird::StaticClass()))
 	{
 		ABird* temp = Cast<ABird>(OtherActor);
-		if  (bcanDetect && MergeNum + temp->MergeNum <= 4 && Remote->bisFlocking && Remote->testarray.Num() <= 4) //do not add more birds if flock max is 4. add this bnack Remote->bisFlocking
+		if (bcanDetect && MergeNum + temp->MergeNum <= 4 && Remote->bisFlocking && Remote->testarray.Num() <= 4) //do not add more birds if flock max is 4. add this bnack Remote->bisFlocking
 		{
-			if (OtherActor != this  && !Remote->testarray.Contains(OtherActor)) //need to double check that big birds do not get added so they do not merge
+			if (OtherActor != this && !Remote->testarray.Contains(OtherActor)) //need to double check that big birds do not get added so they do not merge
 			{
 				Remote->testarray.AddUnique(OtherActor);
 				UE_LOG(LogTemp, Warning, TEXT("actor added :%s"), *OtherActor->GetName());

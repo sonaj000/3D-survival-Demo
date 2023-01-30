@@ -24,13 +24,27 @@ public:
 		int NumberofParentNodes;
 
 
-	double** Weights;
-	double** WeightChanges;
-	double* NeuronValues;
-	double* DesiredValues;
-	double* Errors;
-	double* BiasWeights;
-	double* BiasValues;
+	TArray<TArray<float>>TestWeights;
+
+
+	TArray<TArray<float>>TestWeightsChanges;
+
+
+	TArray<float>TestNeuronValues;
+
+
+	TArray<float>TestDesiredValues;
+
+
+	TArray<float>TestErrors;
+
+
+	TArray<float>TestBiasWeights;
+
+
+	TArray<float>TestBiasValues;
+
+
 	UPROPERTY(VisibleAnywhere, Category = "Setup")
 		double LearningRate;
 
@@ -69,9 +83,9 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+
 };
