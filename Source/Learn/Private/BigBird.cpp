@@ -23,7 +23,7 @@ void ABigBird::ScaleBird(int MNum)
 			DamageNum = 10;
 			sm->SetWorldScale3D(FVector(rescale,rescale,rescale));
 			sm->SetRelativeScale3D(FVector(rescale, rescale, rescale));
-			GetCharacterMovement()->MaxWalkSpeed = 700.0f;
+			GetCharacterMovement()->MaxWalkSpeed = 750.0f;
 			mind->testarray.Empty();
 			mind->testarray.Add(this);
 			break;
@@ -34,7 +34,7 @@ void ABigBird::ScaleBird(int MNum)
 			DamageNum = 15;
 			sm->SetWorldScale3D(FVector(rescale, rescale, rescale));
 			sm->SetRelativeScale3D(FVector(rescale, rescale, rescale));
-			GetCharacterMovement()->MaxWalkSpeed = 800.0f;
+			GetCharacterMovement()->MaxWalkSpeed = 900.0f;
 			mind->testarray.Empty();
 			mind->testarray.Add(this);
 			break;
@@ -45,7 +45,7 @@ void ABigBird::ScaleBird(int MNum)
 			DamageNum = 20;
 			sm->SetWorldScale3D(FVector(rescale, rescale, rescale));
 			sm->SetRelativeScale3D(FVector(rescale, rescale, rescale));
-			GetCharacterMovement()->MaxWalkSpeed = 900.0f;
+			GetCharacterMovement()->MaxWalkSpeed = 1000.0f;
 			mind->testarray.Empty();
 			mind->testarray.Add(this);
 			break;

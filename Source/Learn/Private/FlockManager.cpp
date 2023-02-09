@@ -13,6 +13,8 @@
 #include "FNN.h"
 #include "ItemSpawner/BaseItem.h"
 #include "MCharacter.h"
+#include "Misc/FileHelper.h"
+#include "HAL/FileManager.h"
 
 
 
@@ -72,7 +74,7 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 	int mergeCount = 0; //we will use this to figure out the merge count of the birds
 
 	//pase this out by logic depending on the size of the new flock
-	//will scale from merge number of 2 to 4. 
+	//will scale from merge number of 2.  
 	//check to see if any birds are null
 	for (AActor* check : NewFlock)
 	{
@@ -80,6 +82,7 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		{
 			NewFlock.Remove(check);
 		}
+		//check->SetActorEnableCollision(false);
 	}
 	UE_LOG(LogTemp, Warning, TEXT("mergeflock size :%d"), NewFlock.Num());
 	if (NewFlock.Num() == 2)
@@ -125,66 +128,10 @@ void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
 		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, rm, mergeCount);
 		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
 	}
-	else if (NewFlock.Num() == 3)
+	else
 	{
-		midpoint = (NewFlock[0]->GetActorLocation() + NewFlock[1]->GetActorLocation()) / 2; //get the midpoint between the first two birds
-		midpoint = (midpoint + NewFlock[2]->GetActorLocation()) / 2; //midpoint between last bird and earlier midpoint. 
-		for (AActor* member : NewFlock)
-		{
-
-			ABird* bd = Cast<ABird>(member);
-			if (bd != nullptr)
-			{
-				APawn* Recasted = CastChecked<APawn>(member);
-				ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
-				RC->MoveToLocation(midpoint);
-				if (IsValid(bd))
-				{
-					mergeCount += bd->MergeNum;
-				}
-			}
-
-			//UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *midpoint.ToString());
-			//if (GEngine)
-			//{
-			//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
-			//}
-		}
-		FTimerHandle DD;
-		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, midpoint, mergeCount);
-		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
+		UE_LOG(LogTemp, Warning, TEXT("this is wrong"));
 	}
-	else if (NewFlock.Num() == 4)
-	{
-		midpoint = (NewFlock[0]->GetActorLocation() + NewFlock[1]->GetActorLocation()) / 2;
-		FVector midpoint2 = (NewFlock[2]->GetActorLocation() + NewFlock[3]->GetActorLocation()) / 2;
-		midpoint = (midpoint + midpoint2) / 2;
-		for (AActor* member : NewFlock)
-		{
-			ABird* bd = Cast<ABird>(member);
-			if (bd != nullptr)
-			{
-				APawn* Recasted = CastChecked<APawn>(member);
-				ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
-				RC->MoveToLocation(midpoint);
-				if (IsValid(bd))
-				{
-					mergeCount += bd->MergeNum;
-				}
-			}
-
-			//UE_LOG(LogTemp, Warning, TEXT("midpoint is :%s"), *midpoint.ToString());
-
-			//if (GEngine)
-			//{
-			//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Bird name is :%s"), Cast<FString>(*member->GetActorNameOrLabel()));
-			//}
-		}
-		FTimerHandle DD;
-		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, midpoint, mergeCount);
-		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
-	}
-
 }
 
 void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc, int CountNum)
@@ -201,10 +148,8 @@ void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc, int
 	}
 
 	ABigBird* TestBird = GetWorld()->SpawnActor<ABigBird>(BB, spawnloc, FRotator::ZeroRotator, SpawnParams);
-	if (IsValid(TestBird))
-	{
-		TestBird->ScaleBird(CountNum);
-	}
+	TestBird->ScaleBird(CountNum);
+
 	AllBirds.AddUnique(TestBird);
 	GroupChecker.Add(TestBird, false);
 	UE_LOG(LogTemp, Warning, TEXT("spawn big bird loc:%s"), *spawnloc.ToString());
@@ -244,6 +189,10 @@ void AFlockManager::CheckUnique(TArray<AActor*>RF)
 	{
 		Cool.AddUnique(RF);
 		UE_LOG(LogTemp, Warning, TEXT("unique array added"));
+	}
+	if (counter == false)
+	{
+		return;
 	}
 }
 
@@ -382,7 +331,7 @@ void AFlockManager::BeginPlay()
 
 	Initialize();
 
-	//ImportData(); need to fix
+	ImportData(); //import dataset
 	StartData();
 
 	pn = 0;
@@ -403,30 +352,74 @@ void AFlockManager::BeginPlay()
 void AFlockManager::ImportData()
 {
 
-	//std::ifstream file("TrainingSet2.csv");
-	//UE_LOG(LogTemp, Warning, TEXT("dataset is loaded"));
-	//for (int row = 0; row < 14; ++row)
-	//{
-	//	std::string line;
-	//	std::getline(file, line);
-	//	if (!file.good())
-	//		UE_LOG(LogTemp, Warning, TEXT("it broke away"));
-	//		break;
+	//Acquire the fpath for the training data in the data folder in the content
+	FString fPath = FPaths::ProjectContentDir() + TEXT("Data/TrainingSet2.csv");
+	UE_LOG(LogTemp, Warning, TEXT("FilePaths: ProjectContentDir: %s"), *fPath);
 
-	//	std::stringstream iss(line);
-	//	UE_LOG(LogTemp, Warning, TEXT("in the middle of the loop"));
-	//	for (int col = 0; col < 8; ++col)
-	//	{
-	//		std::string val;
-	//		std::getline(iss, val, ',');
-	//		if (!iss.good())
-	//			break;
+	TestSet; //training data array not used yet
+	TArray<TArray<FString>> parsedCSV;
 
-	//		std::stringstream convertor(val);
-	//		convertor >> TrainingSet[row][col];
-	//	}
-	//}
-	//UE_LOG(LogTemp, Warning, TEXT("TrainingSet index is :%d"),sizeof(TrainingSet));
+
+	FString MyFilePath = FPaths::ProjectContentDir(); //same thing as above delete later
+	MyFilePath.Append(TEXT("Data/TrainingSet2.csv")); //change this out to whatever csv file you are using for the data. 
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+
+	if (FileManager.FileExists(*MyFilePath)) //check if the file exists
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FilePaths: File found!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FilePaths: File not found!"));
+	}
+
+	if (FPaths::FileExists(fPath))
+	{
+		FString FileContent;
+		//Read the csv file
+		FFileHelper::LoadFileToString(FileContent, *fPath);
+		UE_LOG(LogTemp, Error, TEXT("%s"), *FileContent);
+
+		const TCHAR* Terminators[] = { L"\r", L"\n" }; //LINE_TERMINATOR
+		const TCHAR* CSVDelimeters[] = { TEXT(",") };
+
+		TArray<FString> CSVLines;
+		FileContent.ParseIntoArray(CSVLines, Terminators, 2);
+
+		TArray<FString> temp_array;
+		for (int i = 0; i < CSVLines.Num(); i++) {
+			temp_array.Empty();
+			CSVLines[i].ParseIntoArray(temp_array, CSVDelimeters, 1);
+			parsedCSV.Add(temp_array);
+		}
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("no path found"));
+	}
+
+	for (int i = 0; i < parsedCSV.Num(); i++)
+	{
+		TArray<float>temp;
+		temp.Init(0, parsedCSV.Num());
+		for (int j = 0; j < parsedCSV[i].Num(); j++)
+		{
+			//UE_LOG(LogTemp, Error, TEXT("%n"),j);
+			float show = FCString::Atof(*parsedCSV[i][j]);
+			temp.Add(show);
+			UE_LOG(LogTemp, Error, TEXT("%f"), show);
+		}
+		TestSet.Add(temp);
+		temp.Empty();
+	}
+
+
+	for (int i = 0; i < TestSet.Num(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT(" testset.num: %d"), TestSet[i].Num());
+	}
+
 
 }
 

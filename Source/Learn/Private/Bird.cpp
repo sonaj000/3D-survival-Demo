@@ -81,6 +81,7 @@ void ABird::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	//handling damage on overlap with the player and the bird
 	if (bcanDamage && OtherActor != this && OtherActor->IsA(AMCharacter::StaticClass()))
 	{
 		AMCharacter* target = Cast<AMCharacter>(OtherActor);
@@ -91,17 +92,15 @@ void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 
 		bcanDamage = false;
 	}
-	if (Remote && MergeNum <= 4 && OtherActor->IsA(ABird::StaticClass()))
+	//handling the merge logic 
+	ABird* temp = Cast<ABird>(OtherActor);
+	if (Remote->bisFlocking && temp && MergeNum + temp->MergeNum <= 4 && OtherActor->IsA(ABird::StaticClass()))
 	{
-		ABird* temp = Cast<ABird>(OtherActor);
-		if (bcanDetect && MergeNum + temp->MergeNum <= 4 && Remote->bisFlocking && Remote->testarray.Num() <= 4) //do not add more birds if flock max is 4. add this bnack Remote->bisFlocking
+		if (bcanDetect && Remote->testarray.Num() < 2 && OtherActor != this && !Remote->testarray.Contains(OtherActor)) //do not add more birds if flock max is 2. add this bnack Remote->bisFlocking
 		{
-			if (OtherActor != this && !Remote->testarray.Contains(OtherActor)) //need to double check that big birds do not get added so they do not merge
-			{
-				Remote->testarray.AddUnique(OtherActor);
-				UE_LOG(LogTemp, Warning, TEXT("actor added :%s"), *OtherActor->GetName());
-				bcanDetect = false;
-			}
+			Remote->testarray.AddUnique(OtherActor);
+			UE_LOG(LogTemp, Warning, TEXT("actor added :%s"), *OtherActor->GetName());
+			bcanDetect = false;
 		}
 	}
 

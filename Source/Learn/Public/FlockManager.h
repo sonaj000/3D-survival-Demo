@@ -78,6 +78,7 @@ protected:
 
 	TArray<TArray<AActor*>>Cool;
 
+	TArray<TArray<float>>TestSet;
 
 	void ImportData();
 
