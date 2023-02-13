@@ -9,7 +9,7 @@ UStaminaComponent::UStaminaComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
+	stamina = 100;
 	// ...
 }
 
@@ -20,7 +20,8 @@ void UStaminaComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+	GetWorld()->GetTimerManager().SetTimer(StaminaRegeneration, this, &UStaminaComponent::RegenerateStamina, 1.0f, true);
+	GetWorld()->GetTimerManager().PauseTimer(StaminaRegeneration);
 }
 
 
@@ -30,10 +31,6 @@ void UStaminaComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-	stamina = 100;
-
-	GetWorld()->GetTimerManager().SetTimer(StaminaRegeneration, this, &UStaminaComponent::RegenerateStamina, 1.0f, true);
-	GetWorld()->GetTimerManager().PauseTimer(StaminaRegeneration);
 }
 
 void UStaminaComponent::ControlStamina(bool isMoving)
@@ -69,7 +66,7 @@ void UStaminaComponent::RegenerateStamina()
 	}
 }
 
-void UStaminaComponent::LowerStamina()
+void UStaminaComponent::LowerStamina(float amount)
 {
 	if (stamina <= 0.0f)
 	{
@@ -78,7 +75,8 @@ void UStaminaComponent::LowerStamina()
 	}
 	else
 	{
-		stamina -= 10;
+		stamina = stamina - amount;
+		UE_LOG(LogTemp, Warning, TEXT("current stamina is :%s"), *FString::SanitizeFloat(stamina));
 	}
 	UE_LOG(LogTemp, Warning, TEXT("lowering stamina :%s"), *FString::SanitizeFloat(stamina));
 }

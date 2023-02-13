@@ -11,6 +11,7 @@
 #include "FlockManager.h"
 #include "BigBird.h"
 #include "HealthComponent.h"
+#include "MergePoint.h"
 
 // Sets default values
 ABird::ABird()
@@ -81,7 +82,6 @@ void ABird::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//handling damage on overlap with the player and the bird
 	if (bcanDamage && OtherActor != this && OtherActor->IsA(AMCharacter::StaticClass()))
 	{
 		AMCharacter* target = Cast<AMCharacter>(OtherActor);
@@ -92,16 +92,10 @@ void ABird::BeginOverLap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 
 		bcanDamage = false;
 	}
-	//handling the merge logic 
-	ABird* temp = Cast<ABird>(OtherActor);
-	if (Remote->bisFlocking && temp && MergeNum + temp->MergeNum <= 4 && OtherActor->IsA(ABird::StaticClass()))
+	if (Remote && MergeNum <= 4 && OtherActor->IsA(AMergePoint::StaticClass()))
 	{
-		if (bcanDetect && Remote->testarray.Num() < 2 && OtherActor != this && !Remote->testarray.Contains(OtherActor)) //do not add more birds if flock max is 2. add this bnack Remote->bisFlocking
-		{
-			Remote->testarray.AddUnique(OtherActor);
-			UE_LOG(LogTemp, Warning, TEXT("actor added :%s"), *OtherActor->GetName());
-			bcanDetect = false;
-		}
+		bcanDetect = false;
+		//UE_LOG(LogTemp, Warning, TEXT("bcandetect is now false"));
 	}
 
 }
@@ -113,8 +107,7 @@ void ABird::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor
 		if (!bcanDetect && Remote->bisFlocking)
 		{
 			bcanDetect = true;
-			UE_LOG(LogTemp, Warning, TEXT("bcandetect reset"));
-
+			//UE_LOG(LogTemp, Warning, TEXT("bcandetect reset"));
 		}
 	}
 	if (!bcanDamage)

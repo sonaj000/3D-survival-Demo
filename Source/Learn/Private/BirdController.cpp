@@ -14,6 +14,7 @@
 #include "FlockManager.h"
 #include "ItemSpawner/DispenserManager.h"
 #include "ItemSpawner/BaseItem.h"
+#include "MergePoint.h"
 
 ABirdController::ABirdController(const FObjectInitializer& ObjectInitializer)
 {
@@ -114,12 +115,12 @@ void ABirdController::Evading()
 void ABirdController::Flocking()
 {
 	StateChange(3);
-	if (testarray.Num() > 1 && (Cast<ABird>(GetPawn())->MergeNum) < 4 && testarray.Num() <= 2) //change this to include all birds later. 
+	//UE_LOG(LogTemp, Warning, TEXT("b can detect is :%s"), ((Cast<ABird>(GetPawn())->bcanDetect) ? TEXT("true") : TEXT("false")));
+	if ((Cast<ABird>(GetPawn())->bcanDetect) && Cast<ABird>(GetPawn())->MergeNum <= 3 && Manager->AllBirds.Num() < Manager->MaxBirds) //change this to include all birds later. 
 	{
-		//Manager->MergeFlock(testarray);
-		Manager->CheckUnique(testarray);
-		//Manager->tf();
-		UE_LOG(LogTemp, Warning, TEXT("tf function called: array number is :%d"), testarray.Num());
+		AActor* target = UGameplayStatics::GetActorOfClass(GetWorld(), AMergePoint::StaticClass());
+		MoveToLocation(target->GetActorLocation());
+		//UE_LOG(LogTemp, Warning, TEXT("moving to target"));
 	}
 	else
 	{

@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
 #include "HealthComponent.h"
+#include "StaminaComponent.h"
 
 // Sets default values
 AMCharacter::AMCharacter()
@@ -46,6 +47,8 @@ AMCharacter::AMCharacter()
 
 	HealthBar = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Bar"));
 	HealthBar->OnHealthChanged.AddDynamic(this, &AMCharacter::OnHealthChanged);
+
+	StaminaBar = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Bar"));
 
 	Attack = 5;
 }
@@ -96,6 +99,8 @@ void AMCharacter::BeginPlay()
 	Super::BeginPlay();
 	Score = 0;
 	HealthBar->Health = 100;
+	bisFast = false;
+	GetWorld()->GetTimerManager().SetTimer(HandleMovement, this, &AMCharacter::MovementStamina, 1.0f, true);
 
 }
 
@@ -128,6 +133,43 @@ void AMCharacter::MoveRight(float Value)
 	}
 }
 
+void AMCharacter::RunStart()
+{
+	if (StaminaBar->GetStamina() > 5.0f)
+	{
+		bisFast = true;
+		GetCharacterMovement()->MaxWalkSpeed = 1500;
+		StaminaBar->ControlStamina(true);
+	}
+	else if (StaminaBar->GetStamina() <= 0.0f)
+	{
+		StaminaBar->ControlStamina(false);
+	}
+}
+
+void AMCharacter::RunEnd()
+{
+	bisFast = false;
+	GetCharacterMovement()->MaxWalkSpeed = 750;
+	StaminaBar->ControlStamina(false);
+}
+
+void AMCharacter::MovementStamina()
+{
+	if (StaminaBar->GetStamina() <= 0.0f)
+	{
+		bisFast = false;
+		GetCharacterMovement()->MaxWalkSpeed = 750;
+		StaminaBar->ControlStamina(false);
+		UE_LOG(LogTemp, Warning, TEXT("The boolean value is %s"), (bisFast ? TEXT("true") : TEXT("false")));
+	}
+	if (bisFast)
+	{
+		StaminaBar->LowerStamina(10.0f);//we treat this as running
+
+	}
+}
+
 // Called every frame
 void AMCharacter::Tick(float DeltaTime)
 {
@@ -146,6 +188,9 @@ void AMCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAxis("Turn", this, &AMCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &AMCharacter::AddControllerPitchInput);
+
+	PlayerInputComponent->BindAction("RunStart", IE_Pressed, this, &AMCharacter::RunStart);
+	PlayerInputComponent->BindAction("RunEnd", IE_Released, this, &AMCharacter::RunEnd);
 
 }
 

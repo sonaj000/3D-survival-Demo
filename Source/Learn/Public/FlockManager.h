@@ -27,6 +27,9 @@ public:
 	// Sets default values for this actor's properties
 	AFlockManager();
 
+	UPROPERTY(EditAnywhere, Category = "Mesh")
+		UStaticMeshComponent* StaticMesh;
+
 	TArray<AActor*>AllBirds;
 
 	UPROPERTY(VisibleAnywhere, Category = "Merge")
@@ -35,6 +38,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "bigbird")
 		TSubclassOf<ABigBird>BB;
+
+	UPROPERTY(EditAnywhere, Category = "Max Birds")
+		int MaxBirds;
 
 	UFUNCTION()
 		void Initialize();

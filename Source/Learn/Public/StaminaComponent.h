@@ -43,7 +43,7 @@ public:
 		void RegenerateStamina();
 
 	UFUNCTION()
-		void LowerStamina();
+		void LowerStamina(float amount);
 
 	UFUNCTION()
 		float GetStamina();

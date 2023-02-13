@@ -10,6 +10,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class UAudioComponent;
 class UHealthComponent;
+class UStaminaComponent;
 
 UCLASS()
 class LEARN_API AMCharacter : public ACharacter
@@ -49,6 +50,8 @@ public:
 	UFUNCTION()
 		void OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+		UStaminaComponent* StaminaBar;
 
 protected:
 	// Called when the game starts or when spawned
@@ -59,6 +62,19 @@ protected:
 
 	/** Called for side to side input */
 	void MoveRight(float Value);
+
+	//movement
+	UPROPERTY()
+		bool bisFast;
+	FTimerHandle HandleMovement;
+
+	UFUNCTION()
+		void RunStart();
+	UFUNCTION()
+		void RunEnd();
+
+	UFUNCTION()
+		void MovementStamina();
 
 public:
 	// Called every frame

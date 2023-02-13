@@ -23,6 +23,10 @@ AFlockManager::AFlockManager()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
+	RootComponent = StaticMesh;
+	MaxBirds = 15;
 }
 
 void AFlockManager::Initialize()
@@ -215,30 +219,6 @@ void AFlockManager::tf()
 			}
 		}
 	}
-	if (Cool.Num() > 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("number of unique arrays in there :%d"), Cool.Num());
-		for (TArray PR : Cool)
-		{
-			int length = PR.Num();
-			int randnum = FMath::RandRange(0, length);
-			AActor* cl = PR[0];
-			if (IsValid(cl))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("length of the array is :%d"), length);
-				APawn* Recasted = Cast<APawn>(cl);
-				ABirdController* BC = Cast<ABirdController>(Recasted->GetController());
-				if (IsValid(BC))
-				{
-					MergeFlock(BC->testarray);
-					BC->testarray.Empty(); // help reset it
-				}
-			}
-
-		}
-		Cool.Empty();
-	}
-
 
 }
 
@@ -256,10 +236,6 @@ void AFlockManager::chasePhase()
 				ABirdController* R = Cast<ABirdController>(Recasted->GetController());
 				//Bir->bcanDetect = true; ???maybe need. 
 				R->testarray.Empty();
-				for (int i{ 0 }; i < GroupChecker.Num(); i++)
-				{
-					GroupChecker[AllBirds[i]] = false;
-				}
 				R->Chasing();
 				//UE_LOG(LogTemp, Warning, TEXT("birds are chasing"));
 			}
@@ -281,10 +257,6 @@ void AFlockManager::evadePhase()
 				ABirdController* R = Cast<ABirdController>(Recasted->GetController());
 				//Bir->bcanDetect = true; ???maybe need. 
 				R->testarray.Empty();
-				for (int i{ 0 }; i < GroupChecker.Num(); i++)
-				{
-					GroupChecker[AllBirds[i]] = false;
-				}
 				R->Evading();
 				//UE_LOG(LogTemp, Warning, TEXT("birds are evading"));
 			}
@@ -305,10 +277,6 @@ void AFlockManager::DestroyPhase()
 				ABirdController* R = Cast<ABirdController>(Recasted->GetController());
 				//Bir->bcanDetect = true; ???maybe need. 
 				R->testarray.Empty();
-				for (int i{ 0 }; i < GroupChecker.Num(); i++)
-				{
-					GroupChecker[AllBirds[i]] = false;
-				}
 				R->Destroying();
 				//UE_LOG(LogTemp, Warning, TEXT("birds are evading"));
 			}
@@ -506,11 +474,11 @@ void AFlockManager::Retrain(float evade, float chase, float merge, float DDay)
 
 				}
 				input4 = C->HealthRef / C->HealthDefRef;
-				UE_LOG(LogTemp, Warning, TEXT("input4 is :%f"), input4);
+				//UE_LOG(LogTemp, Warning, TEXT("input4 is :%f"), input4);
 				input5 = StaticCast<float>(C->bcanDamage);
-				UE_LOG(LogTemp, Warning, TEXT("input5 is :%f"), input5);
+				//UE_LOG(LogTemp, Warning, TEXT("input5 is :%f"), input5);
 				input6 = StaticCast<float>(IsValid(UGameplayStatics::GetActorOfClass(GetWorld(), ABaseItem::StaticClass())));
-				UE_LOG(LogTemp, Warning, TEXT("input6 is :%f"), input6);
+				//UE_LOG(LogTemp, Warning, TEXT("input6 is :%f"), input6);
 
 				NeuralNetwork->SetInput(0, input0);
 				NeuralNetwork->SetInput(1, input1);
@@ -636,7 +604,7 @@ void AFlockManager::newCommand()
 			}
 		}
 		pn = NeuralNetwork->GetMaxOutputID();
-		UE_LOG(LogTemp, Warning, TEXT("command is :%d"), pn);
+		//UE_LOG(LogTemp, Warning, TEXT("command is :%d"), pn);
 	}
 
 }
