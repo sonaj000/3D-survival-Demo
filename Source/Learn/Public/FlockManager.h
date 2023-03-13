@@ -46,15 +46,6 @@ public:
 		void Initialize();
 
 	UFUNCTION()
-		void MergeFlock(TArray<AActor*>NewFlock);
-
-	UFUNCTION()
-		void DestroyFlock(TArray<AActor*>NewFlock, FVector spawnloc, int CountNum);
-
-
-	void CheckUnique(TArray<AActor*>RF);
-
-	UFUNCTION()
 		void tf();
 
 	UFUNCTION()
@@ -106,6 +97,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Brain")
 		/*TSubclassOf<AFNN>NeuralNetwork; */
 		AFNN* NeuralNetwork;
+
+	UPROPERTY(EditAnywhere, Category = "Spawn")
+		TSubclassOf<AFNN>NeuralNet;
 
 private:
 	UPROPERTY()

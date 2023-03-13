@@ -26,7 +26,7 @@ AFlockManager::AFlockManager()
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	RootComponent = StaticMesh;
-	MaxBirds = 15;
+	MaxBirds = 10;
 }
 
 void AFlockManager::Initialize()
@@ -42,11 +42,6 @@ void AFlockManager::Initialize()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("all the birds are added"));
 	}
-	Mainchar = Cast<AMCharacter>(UGameplayStatics::GetActorOfClass(GetWorld(), AMCharacter::StaticClass()));
-	NeuralNetwork = Cast<AFNN>(UGameplayStatics::GetActorOfClass(GetWorld(), AFNN::StaticClass()));
-	NeuralNetwork->Initialize(7, 6, 4);
-	NeuralNetwork->SetLearningRate(0.2);
-	NeuralNetwork->SetMomentum(true, 0.9);
 
 	// Size1	Size2	Size3	Size4	Health	PHealth			Item	Evade	Chase	Merge	Destroy	
 	TrainingSet = {
@@ -67,137 +62,24 @@ void AFlockManager::Initialize()
 	{1,			0,		0,		0,		1,		1,				1,			0,		0,		0.9,	0.1},
 	};
 
-	UE_LOG(LogTemp, Warning, TEXT("TrainSet index is :%f"), TrainingSet[2][1]);
 
-}
+	Mainchar = Cast<AMCharacter>(UGameplayStatics::GetActorOfClass(GetWorld(), AMCharacter::StaticClass()));
+	NeuralNetwork = Cast<AFNN>(UGameplayStatics::GetActorOfClass(GetWorld(), AFNN::StaticClass()));
 
-void AFlockManager::MergeFlock(TArray<AActor*> NewFlock)
-{
-	UE_LOG(LogTemp, Warning, TEXT("mergeflock"));
-	FVector midpoint = FVector(0, 0, 0);
-	int mergeCount = 0; //we will use this to figure out the merge count of the birds
-
-	//pase this out by logic depending on the size of the new flock
-	//will scale from merge number of 2.  
-	//check to see if any birds are null
-	for (AActor* check : NewFlock)
+	if (IsValid(NeuralNetwork))
 	{
-		if (check == nullptr)
-		{
-			NewFlock.Remove(check);
-		}
-		//check->SetActorEnableCollision(false);
-	}
-	UE_LOG(LogTemp, Warning, TEXT("mergeflock size :%d"), NewFlock.Num());
-	if (NewFlock.Num() == 2)
-	{
-		for (int i{ 0 }; i < NewFlock.Num(); i++)
-		{
-			if (IsValid(NewFlock[i]))
-			{
-				midpoint += NewFlock[i]->GetActorLocation();
-			}
-
-		}
-		FVector rm = midpoint / 2;
-		for (AActor* member : NewFlock)
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("this member has been merged %s"), *member->GetName());
-			ABird* bd = Cast<ABird>(member);
-			if (bd != nullptr)
-			{
-				APawn* Recasted = CastChecked<APawn>(member);
-				ABirdController* RC = Cast<ABirdController>(Recasted->GetController());
-				FVector d = midpoint / 2;
-				if (RC)
-				{
-					RC->MoveToLocation(d);
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("not moving to location"));
-				}
-				if (IsValid(bd))
-				{
-					mergeCount += bd->MergeNum;
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("merge number not valid"));
-				}
-			}
-
-		}
-		FTimerHandle DD;
-		FTimerDelegate DestroyD = FTimerDelegate::CreateUObject(this, &AFlockManager::DestroyFlock, NewFlock, rm, mergeCount);
-		GetWorld()->GetTimerManager().SetTimer(DD, DestroyD, 1.0, false);
+		NeuralNetwork->Initialize(7, 6, 4);
+		NeuralNetwork->SetLearningRate(0.2);
+		NeuralNetwork->SetMomentum(true, 0.9);
+		UE_LOG(LogTemp, Warning, TEXT("TrainSet index is :%f"), TrainingSet[2][1]);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("this is wrong"));
-	}
-}
-
-void AFlockManager::DestroyFlock(TArray<AActor*> NewFlock, FVector spawnloc, int CountNum)
-{
-	UE_LOG(LogTemp, Warning, TEXT("destroy flock"));
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	for (AActor* member : NewFlock)
-	{
-		AllBirds.Remove(member);
-		GroupChecker.Remove(member);
-		member->Destroy();
+		NeuralNetwork = Cast<AFNN>(UGameplayStatics::GetActorOfClass(GetWorld(), AFNN::StaticClass()));
+		UE_LOG(LogTemp, Warning, TEXT("network is not set"));
 	}
 
-	ABigBird* TestBird = GetWorld()->SpawnActor<ABigBird>(BB, spawnloc, FRotator::ZeroRotator, SpawnParams);
-	TestBird->ScaleBird(CountNum);
 
-	AllBirds.AddUnique(TestBird);
-	GroupChecker.Add(TestBird, false);
-	UE_LOG(LogTemp, Warning, TEXT("spawn big bird loc:%s"), *spawnloc.ToString());
-
-	//
-	//FTransform ReturnTransform;
-	//ReturnTransform.SetLocation(FVector(-20170.0, -6710.0, 100));
-	//ReturnTransform.SetRotation(FRotator::ZeroRotator.Quaternion());
-
-	//ABird* t = GetWorld()->SpawnActor<ABird>(MyActorClass, ReturnTransform);
-
-}
-
-void AFlockManager::CheckUnique(TArray<AActor*>RF)
-{
-	bool counter = false;
-	for (AActor* bird : RF)
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("Actor in the array : %s"), *bird->GetName());
-		if (IsValid(bird))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("bird is valid in the array being checked"));
-			if (GroupChecker.Contains(bird))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("group chcker contains bird"));
-				if (GroupChecker[bird] == false)
-				{
-					GroupChecker[bird] = true;
-					counter = true;
-					UE_LOG(LogTemp, Warning, TEXT("bird is true somehow"));
-				}
-
-			}
-		}
-	}
-	if (counter == true)
-	{
-		Cool.AddUnique(RF);
-		UE_LOG(LogTemp, Warning, TEXT("unique array added"));
-	}
-	if (counter == false)
-	{
-		return;
-	}
 }
 
 void AFlockManager::tf()
@@ -297,21 +179,25 @@ void AFlockManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Initialize();
-
-	ImportData(); //import dataset
-	StartData();
-
 	pn = 0;
 
-	FTimerHandle Testing;
-	GetWorld()->GetTimerManager().SetTimer(Testing, this, &AFlockManager::newCommand, 5.0f, true);
+	ImportData(); //import dataset
 
-	FTimerHandle Update;
-	GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::StateUpdate, 1.0f, true);
+	Initialize();
+	if (NeuralNetwork != nullptr)
+	{
+		StartData();
 
-	FTimerHandle Update2;
-	GetWorld()->GetTimerManager().SetTimer(Update2, this, &AFlockManager::random, 6.0f, true);
+		FTimerHandle Testing;
+		GetWorld()->GetTimerManager().SetTimer(Testing, this, &AFlockManager::newCommand, 5.0f, true);
+
+		FTimerHandle Update;
+		GetWorld()->GetTimerManager().SetTimer(Update, this, &AFlockManager::StateUpdate, 1.0f, true);
+
+		FTimerHandle Update2;
+		GetWorld()->GetTimerManager().SetTimer(Update2, this, &AFlockManager::random, 6.0f, true);
+	}
+
 
 
 
@@ -382,12 +268,10 @@ void AFlockManager::ImportData()
 		temp.Empty();
 	}
 
-
 	for (int i = 0; i < TestSet.Num(); i++)
 	{
 		UE_LOG(LogTemp, Warning, TEXT(" testset.num: %d"), TestSet[i].Num());
 	}
-
 
 }
 
@@ -402,18 +286,18 @@ void AFlockManager::StartData()
 		c++;
 		for (int i{ 0 }; i < 3; i++)
 		{
-			NeuralNetwork->SetInput(0, TrainingSet[i][0]);
-			NeuralNetwork->SetInput(0, TrainingSet[i][1]);
-			NeuralNetwork->SetInput(0, TrainingSet[i][2]);
-			NeuralNetwork->SetInput(0, TrainingSet[i][3]);
-			NeuralNetwork->SetInput(0, TrainingSet[i][4]);
-			NeuralNetwork->SetInput(0, TrainingSet[i][5]);
-			NeuralNetwork->SetInput(0, TrainingSet[i][6]);
+			NeuralNetwork->SetInput(0, TestSet[i][0]);
+			NeuralNetwork->SetInput(0, TestSet[i][1]);
+			NeuralNetwork->SetInput(0, TestSet[i][2]);
+			NeuralNetwork->SetInput(0, TestSet[i][3]);
+			NeuralNetwork->SetInput(0, TestSet[i][4]);
+			NeuralNetwork->SetInput(0, TestSet[i][5]);
+			NeuralNetwork->SetInput(0, TestSet[i][6]);
 
-			NeuralNetwork->SetDesiredOutput(0, TrainingSet[i][7]);
-			NeuralNetwork->SetDesiredOutput(0, TrainingSet[i][8]);
-			NeuralNetwork->SetDesiredOutput(0, TrainingSet[i][9]);
-			NeuralNetwork->SetDesiredOutput(0, TrainingSet[i][10]);
+			NeuralNetwork->SetDesiredOutput(0, TestSet[i][7]);
+			NeuralNetwork->SetDesiredOutput(0, TestSet[i][8]);
+			NeuralNetwork->SetDesiredOutput(0, TestSet[i][9]);
+			NeuralNetwork->SetDesiredOutput(0, TestSet[i][10]);
 
 			NeuralNetwork->FeedForward();
 			error += NeuralNetwork->CalculateError();
@@ -475,7 +359,7 @@ void AFlockManager::Retrain(float evade, float chase, float merge, float DDay)
 				}
 				input4 = C->HealthRef / C->HealthDefRef;
 				//UE_LOG(LogTemp, Warning, TEXT("input4 is :%f"), input4);
-				input5 = StaticCast<float>(C->bcanDamage);
+				input5 = StaticCast<float>(AllBirds.Num()/10);
 				//UE_LOG(LogTemp, Warning, TEXT("input5 is :%f"), input5);
 				input6 = StaticCast<float>(IsValid(UGameplayStatics::GetActorOfClass(GetWorld(), ABaseItem::StaticClass())));
 				//UE_LOG(LogTemp, Warning, TEXT("input6 is :%f"), input6);
@@ -561,6 +445,7 @@ void AFlockManager::newCommand()
 			if (IsValid(Birdie))
 			{
 				ABird* C = Cast<ABird>(Birdie);
+				ABirdController* R = Cast<ABirdController>(C->GetController());
 				switch (C->MergeNum)
 				{
 				case 0:
@@ -590,7 +475,7 @@ void AFlockManager::newCommand()
 
 				}
 				input4 = C->HealthRef / C->HealthDefRef;
-				input5 = StaticCast<float>(C->bcanDamage);
+				input5 = StaticCast<float>((R->Manager->AllBirds.Num())/10);
 				input6 = StaticCast<float>(IsValid(UGameplayStatics::GetActorOfClass(GetWorld(), ABaseItem::StaticClass())));
 
 				NeuralNetwork->SetInput(0, input0);
@@ -602,8 +487,9 @@ void AFlockManager::newCommand()
 				NeuralNetwork->SetInput(6, input6);
 				NeuralNetwork->FeedForward();
 			}
+			pn = NeuralNetwork->GetMaxOutputID(); // move this up after the feedforward
 		}
-		pn = NeuralNetwork->GetMaxOutputID();
+
 		//UE_LOG(LogTemp, Warning, TEXT("command is :%d"), pn);
 	}
 

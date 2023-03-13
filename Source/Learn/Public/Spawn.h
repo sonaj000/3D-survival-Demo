@@ -9,6 +9,7 @@
 class UBoxComponent;
 class APoints;
 class ABird;
+class AFlockManager;
 
 UCLASS()
 class LEARN_API ASpawn : public AActor
@@ -45,5 +46,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Flocking")
+		AFlockManager* Manager;
 
 };

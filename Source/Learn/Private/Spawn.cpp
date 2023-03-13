@@ -8,6 +8,8 @@
 #include "Bird.h"
 #include "BirdController.h"
 #include "FlockManager.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 ASpawn::ASpawn()
@@ -44,11 +46,15 @@ void ASpawn::SpawnBirds()
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	FVector SpawnPoint = GetPoint();
-	ABird* NewBird = GetWorld()->SpawnActor<ABird>(Birdie, SpawnPoint, FRotator::ZeroRotator, SpawnParams);
-	ABirdController* brain = Cast<ABirdController>(NewBird->GetController());
-	brain->Manager->GroupChecker.Add(NewBird,false);
-	brain->Manager->AllBirds.Add(NewBird);
+
+	if (Manager->AllBirds.Num() <= 10)
+	{
+		FVector SpawnPoint = GetPoint();
+		ABird* NewBird = GetWorld()->SpawnActor<ABird>(Birdie, SpawnPoint, FRotator::ZeroRotator, SpawnParams);
+		ABirdController* brain = Cast<ABirdController>(NewBird->GetController());
+		brain->Manager->GroupChecker.Add(NewBird, false);
+		brain->Manager->AllBirds.Add(NewBird);
+	}
 	//spawn birds in the box and 
 }
 
@@ -61,7 +67,9 @@ void ASpawn::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(Spawn, this, &ASpawn::SpawnPoints, 2.0f, true);
 
 	FTimerHandle SpawnBirds;
-	GetWorld()->GetTimerManager().SetTimer(SpawnBirds, this, &ASpawn::SpawnBirds, 7.5f, true);
+	GetWorld()->GetTimerManager().SetTimer(SpawnBirds, this, &ASpawn::SpawnBirds, 5.0f, true);
+
+	Manager = Cast<AFlockManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AFlockManager::StaticClass()));
 	
 }
 

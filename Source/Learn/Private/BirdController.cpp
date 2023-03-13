@@ -124,34 +124,35 @@ void ABirdController::Flocking()
 	}
 	else
 	{
-		//try
+		Chasing();
+		////try
+		////{
+		////	//UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
+		////	//this->MoveToActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));//swap this out for actor location
+		////	this->MoveToLocation(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation());
+		////}
+		////catch (const std::exception&)
+		////{
+		////	//UE_LOG(LogTemp, Warning, TEXT("no work"));
+		////}
+		//UNavigationSystemV1* NavArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+		//FVector RandomLoc = FVector(0, 0, 0);
+		//FNavLocation ResultLocation;
+		//bool bSuccess = NavArea->GetRandomReachablePointInRadius(NavArea->GetWorldBounds().GetCenter(), 5000.0f, ResultLocation);
+		//if (bSuccess)
+		//{
+		//	RandomLoc = ResultLocation;
+		//}
+		/////FVector RandomLoc = NavArea->GetRandomReachablePointInRadius(this, NavArea->GetWorldBounds().GetCenter(), 2000.0f); // change the radius of the randomization
+		//FVector PlayerLoc = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
+		///// <summary>
+		///// maybe make this a while loop instead of if. 
+		///// </summary>
+		//if (FVector::Distance(RandomLoc, PlayerLoc) > 4000.0f)
 		//{
 		//	//UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
-		//	//this->MoveToActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));//swap this out for actor location
-		//	this->MoveToLocation(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation());
+		//	this->MoveToLocation(RandomLoc);
 		//}
-		//catch (const std::exception&)
-		//{
-		//	//UE_LOG(LogTemp, Warning, TEXT("no work"));
-		//}
-		UNavigationSystemV1* NavArea = FNavigationSystem::GetCurrent<UNavigationSystemV1>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-		FVector RandomLoc = FVector(0, 0, 0);
-		FNavLocation ResultLocation;
-		bool bSuccess = NavArea->GetRandomReachablePointInRadius(NavArea->GetWorldBounds().GetCenter(), 5000.0f, ResultLocation);
-		if (bSuccess)
-		{
-			RandomLoc = ResultLocation;
-		}
-		///FVector RandomLoc = NavArea->GetRandomReachablePointInRadius(this, NavArea->GetWorldBounds().GetCenter(), 2000.0f); // change the radius of the randomization
-		FVector PlayerLoc = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
-		/// <summary>
-		/// maybe make this a while loop instead of if. 
-		/// </summary>
-		if (FVector::Distance(RandomLoc, PlayerLoc) > 4000.0f)
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("is greater than 2000"));
-			this->MoveToLocation(RandomLoc);
-		}
 	}
 
 

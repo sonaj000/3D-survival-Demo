@@ -87,7 +87,7 @@ void AMCharacter::OnHealthChanged(UHealthComponent* OwningHealthComp, float Heal
 		//DetachFromControllerPendingDestroy();
 
 		//SetLifeSpan(5.0f);
-		UGameplayStatics::OpenLevel(this, FName("NewMap"), false);
+		UGameplayStatics::OpenLevel(this, FName("MenuMap"), false);
 		//change this to death scene later
 
 	}
@@ -174,6 +174,12 @@ void AMCharacter::MovementStamina()
 void AMCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	APlayerController* controller = Cast<APlayerController>(GetController());
+	if (controller->IsInputKeyDown(FKey(EKeys::Tab)) && controller != NULL)
+	{
+		UGameplayStatics::OpenLevel(this, FName("MenuMap"), false);
+	}
 
 }
 
